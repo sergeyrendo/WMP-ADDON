@@ -1,0 +1,9 @@
+{
+  "values": [
+    "#forge:ingots/steel",
+    {
+      "id": "dreamaticvoyage:fukamizu_bread_ingot",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "values": [
+    "#forge:storage_blocks/steel",
+    {
+      "id": "dreamaticvoyage:fukamizu_bread_bricks",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "ID": "superbwarfare:javelin",
+  "DefaultZoom": 3,
+  "Spread": 5,
+  "Magazine": 1,
+  "Weight": 10,
+  "EmptyReloadTime": 78,
+  "Damage": 700,
+  "ExplosionDamage": 60,
+  "ExplosionRadius": 5,
+  "AmmoType": "superbwarfare:javelin_missile",
+  "AvailablePerks": [
+    "superbwarfare:powerful_attraction",
+    "superbwarfare:intelligent_chip",
+    "superbwarfare:monster_hunter",
+    "superbwarfare:vorpal_weapon"
+  ]
+}

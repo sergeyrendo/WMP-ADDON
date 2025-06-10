@@ -1,0 +1,25 @@
+{
+  "ID": "superbwarfare:rpg",
+  "Spread": 5,
+  "RecoilX": 0.008,
+  "RecoilY": 0.018,
+  "Damage": 270,
+  "Projectile": {
+    "Type": "superbwarfare:rpg_rocket"
+  },
+  "ExplosionDamage": 130,
+  "ExplosionRadius": 10,
+  "Velocity": 4,
+  "Magazine": 1,
+  "Weight": 7,
+  "EmptyReloadTime": 103,
+  "RPM": 120,
+  "AmmoType": "superbwarfare:rocket",
+  "AvailablePerks": [
+    "superbwarfare:powerful_attraction",
+    "superbwarfare:intelligent_chip",
+    "superbwarfare:monster_hunter",
+    "superbwarfare:vorpal_weapon",
+    "superbwarfare:micro_missile"
+  ]
+}

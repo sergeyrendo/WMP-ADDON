@@ -1,0 +1,123 @@
+{
+  "m1a1_engine": {
+    "sounds": [
+      "mcsp:m1a1_engine"
+    ]
+  },
+  "m1a1_fire": {
+    "sounds": [
+      "mcsp:m1a1_fire"
+    ]
+  },
+  "m1a1_reload": {
+    "sounds": [
+      "minecraft:item.crossbow.loading_end"
+    ]
+  },
+  "wheel_step": {
+    "sounds": [
+      "minecraft:block.gravel.step"
+    ]
+  },
+  "yx_100_fire_1p": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_fire_3p": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_far": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_veryfar": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_reload": {
+    "sounds": [
+      "minecraft:block.iron_door.close"
+    ]
+  },
+  "m_2_fire_1p": {
+    "sounds": [
+      "minecraft:entity.firework_rocket.blast"
+    ]
+  },
+  "m_2_fire_3p": {
+    "sounds": [
+      "minecraft:entity.firework_rocket.blast"
+    ]
+  },
+  "m_2_far": {
+    "sounds": [
+      "minecraft:entity.firework_rocket.blast"
+    ]
+  },
+  "m_2_veryfar": {
+    "sounds": [
+      "minecraft:entity.firework_rocket.blast_far"
+    ]
+  },
+  "taifun_engine": {
+    "sounds": [
+      "mcsp:taifun_engine"
+    ]
+  },
+  "vdv_cannon_fire": {
+    "sounds": [
+      "mcsp:vdv_cannon_fire"
+    ]
+  },
+  "vdv_cannon_fire_1p": {
+    "sounds": [
+      "mcsp:vdv_cannon_fire_1p"
+    ]
+  },
+  "vdv_cannon_fire_3p": {
+    "sounds": [
+      "mcsp:vdv_cannon_fire_3p"
+    ]
+  },
+  "vdv_cannon_fire_far": {
+    "sounds": [
+      "mcsp:vdv_cannon_fire_far"
+    ]
+  },
+  "vdv_cannon_fire_veryfar": {
+    "sounds": [
+      "mcsp:vdv_cannon_fire_veryfar"
+    ]
+  },
+  "smoke_fire": {
+    "sounds": [
+      "mcsp:smoke_fire"
+    ]
+  },
+  "bmp_missle_fire": {
+    "sounds": [
+      "mcsp:bmp_missle_fire"
+    ]
+  },
+  "bmp_missle_fire_1p": {
+    "sounds": [
+      "mcsp:bmp_missle_fire_1p"
+    ]
+  },
+  "bmp_missle_fire_3p": {
+    "sounds": [
+      "mcsp:bmp_missle_fire_3p"
+    ]
+  },
+  "bmp_missle_reload": {
+    "sounds": [
+      "mcsp:bmp_missle_reload"
+    ]
+  }
+
+}

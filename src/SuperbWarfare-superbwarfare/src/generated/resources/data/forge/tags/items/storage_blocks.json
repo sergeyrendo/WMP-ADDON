@@ -1,0 +1,8 @@
+{
+  "values": [
+    "#forge:storage_blocks/lead",
+    "#forge:storage_blocks/steel",
+    "#forge:storage_blocks/tungsten",
+    "#forge:storage_blocks/silver"
+  ]
+}

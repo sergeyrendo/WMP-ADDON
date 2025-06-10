@@ -1,0 +1,86 @@
+{
+  "m1a1_reload": {
+    "sounds": [
+      "minecraft:item.crossbow.loading_end"
+    ]
+  },
+  "wheel_step": {
+    "sounds": [
+      "minecraft:block.gravel.step"
+    ]
+  },
+  "yx_100_fire_1p": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_fire_3p": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_far": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_veryfar": {
+    "sounds": [
+      "minecraft:entity.generic.explode"
+    ]
+  },
+  "yx_100_reload": {
+    "sounds": [
+      "minecraft:block.iron_door.close"
+    ]
+  },
+
+
+  "m2_1p": {
+    "sounds": [
+      "wmp:m2_1p"
+    ]
+  },
+  "m2_3p": {
+    "sounds": [
+      "wmp:m2_3p"
+    ]
+  },
+  "m2_far": {
+    "sounds": [
+      "wmp:m2_far"
+    ]
+  },
+  "m2_veryfar": {
+    "sounds": [
+      "wmp:m2_veryfar"
+    ]
+  },
+  "humvee_engine": {
+    "sounds": [
+      "wmp:humvee_engine"
+    ]
+  },
+
+  "tow_1p": {
+    "sounds": [
+      "wmp:tow_1p"
+    ]
+  },
+  "tow_3p": {
+    "sounds": [
+      "wmp:tow_3p"
+    ]
+  },
+  "tow_far": {
+    "sounds": [
+      "wmp:tow_far"
+    ]
+  },
+  "tow_reload": {
+    "sounds": [
+      "minecraft:block.iron_door.close"
+    ]
+  }
+
+}

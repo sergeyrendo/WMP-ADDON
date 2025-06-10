@@ -1,0 +1,33 @@
+{
+  "required": true,
+  "package": "com.atsuishio.superbwarfare.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mixins.superbwarfare.refmap.json",
+  "mixins": [
+    "BeastMixin",
+    "ClientboundSetPassengersPacketMixin",
+    "EntityMixin",
+    "ExplosionMixin",
+    "FishingHookMixin",
+    "LivingEntityMixin",
+    "PlayerMixin",
+    "VillagerMixin"
+  ],
+  "client": [
+    "CameraMixin",
+    "ClientPacketListenerMixin",
+    "ClientPlayerEntityMixin",
+    "EntityRenderDispatcherMixin",
+    "GameRendererMixin",
+    "ItemInHandLayerMixin",
+    "KeyboardInputMixin",
+    "KeymappingMixin",
+    "LivingEntityRendererMixin",
+    "MinecraftMixin",
+    "MouseHandlerMixin"
+  ],
+  "minVersion": "0.8",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
