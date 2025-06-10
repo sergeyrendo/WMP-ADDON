@@ -4,8 +4,12 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 public class DisplayConfig {
 
+    public static ForgeConfigSpec.BooleanValue ENABLE_GUN_LOD;
+    public static ForgeConfigSpec.IntValue WEAPON_HUD_X_OFFSET;
+    public static ForgeConfigSpec.IntValue WEAPON_HUD_Y_OFFSET;
     public static ForgeConfigSpec.BooleanValue KILL_INDICATION;
     public static ForgeConfigSpec.BooleanValue AMMO_HUD;
+    public static ForgeConfigSpec.BooleanValue VEHICLE_INFO;
     public static ForgeConfigSpec.BooleanValue FLOAT_CROSS_HAIR;
     public static ForgeConfigSpec.BooleanValue CAMERA_ROTATE;
     public static ForgeConfigSpec.BooleanValue ARMOR_PLATE_HUD;
@@ -19,11 +23,23 @@ public class DisplayConfig {
     public static void init(ForgeConfigSpec.Builder builder) {
         builder.push("display");
 
+        builder.comment("Set true to enable gun lod");
+        ENABLE_GUN_LOD = builder.define("enable_gun_lod", false);
+
+        builder.comment("The x offset of weapon hud");
+        WEAPON_HUD_X_OFFSET = builder.defineInRange("weapon_hud_x_offset", 0, -1000, 1000);
+
+        builder.comment("The y offset of weapon hud");
+        WEAPON_HUD_Y_OFFSET = builder.defineInRange("weapon_hud_y_offset", 0, -1000, 1000);
+
         builder.comment("Set true if you want to show kill indication while killing an entity");
         KILL_INDICATION = builder.define("kill_indication", true);
 
         builder.comment("Set true to show ammo and gun info on HUD");
         AMMO_HUD = builder.define("ammo_hud", true);
+
+        builder.comment("Set true to display vehicle info when aiming at a vehicle");
+        VEHICLE_INFO = builder.define("vehicle_info", true);
 
         builder.comment("Set true to enable float cross hair");
         FLOAT_CROSS_HAIR = builder.define("float_cross_hair", true);

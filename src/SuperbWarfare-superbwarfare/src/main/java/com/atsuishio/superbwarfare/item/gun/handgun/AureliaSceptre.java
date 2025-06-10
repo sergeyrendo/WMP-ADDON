@@ -19,29 +19,26 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class AureliaSceptre extends GunItem implements GeoItem {
-
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+public class AureliaSceptre extends GunItem {
 
     public AureliaSceptre() {
         super(new Properties().stacksTo(1).rarity(RarityTool.LEGENDARY));
@@ -51,14 +48,17 @@ public class AureliaSceptre extends GunItem implements GeoItem {
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer) {
         super.initializeClient(consumer);
         consumer.accept(new IClientItemExtensions() {
-            private final BlockEntityWithoutLevelRenderer renderer = new AureliaSceptreRenderer();
+            private BlockEntityWithoutLevelRenderer renderer = new AureliaSceptreRenderer();
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return renderer;
+                if (this.renderer == null) {
+                    this.renderer = new AureliaSceptreRenderer();
+                }
+                return this.renderer;
             }
 
-            private static final HumanoidModel.ArmPose AureliaSceptrePose = HumanoidModel.ArmPose.create("AureliaSceptre", false, (model, entity, arm) -> {
+            private static final HumanoidModel.ArmPose AURELIA_SCEPTRE_POSE = HumanoidModel.ArmPose.create("AureliaSceptre", false, (model, entity, arm) -> {
                 if (arm != HumanoidArm.LEFT) {
                     model.rightArm.xRot = -67.5f * Mth.DEG_TO_RAD + model.head.xRot + 0.2f * model.rightArm.xRot;
                     model.rightArm.yRot = 5f * Mth.DEG_TO_RAD;
@@ -69,7 +69,7 @@ public class AureliaSceptre extends GunItem implements GeoItem {
             public HumanoidModel.ArmPose getArmPose(LivingEntity entityLiving, InteractionHand hand, ItemStack itemStack) {
                 if (!itemStack.isEmpty()) {
                     if (entityLiving.getUsedItemHand() == hand) {
-                        return AureliaSceptrePose;
+                        return AURELIA_SCEPTRE_POSE;
                     }
                 }
                 return HumanoidModel.ArmPose.EMPTY;
@@ -82,7 +82,8 @@ public class AureliaSceptre extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
-
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.aurelia_sceptre.idle"));
 
         if (player.isSprinting() && player.onGround()
                 && ClientEventHandler.cantSprint == 0
@@ -98,17 +99,22 @@ public class AureliaSceptre extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem gunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.aurelia_sceptre.idle"));
+
         var data = GunData.from(stack);
 
         if (ClientEventHandler.holdFire && gunItem.canShoot(data) && !data.overHeat.get()) {
             return event.setAndContinue(RawAnimation.begin().thenLoop("animation.aurelia_sceptre.fire"));
         }
 
-
         return event.setAndContinue(RawAnimation.begin().thenLoop("animation.aurelia_sceptre.idle"));
     }
 
     private PlayState meleePredicate(AnimationState<AureliaSceptre> event) {
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.aurelia_sceptre.idle"));
+
         if (ClientEventHandler.gunMelee > 0) {
             return event.setAndContinue(RawAnimation.begin().thenPlay("animation.aurelia_sceptre.hit"));
         }
@@ -136,11 +142,6 @@ public class AureliaSceptre extends GunItem implements GeoItem {
         data.add(fireController);
         var meleeController = new AnimationController<>(this, "meleeController", 0, this::meleePredicate);
         data.add(meleeController);
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
     }
 
     @Override

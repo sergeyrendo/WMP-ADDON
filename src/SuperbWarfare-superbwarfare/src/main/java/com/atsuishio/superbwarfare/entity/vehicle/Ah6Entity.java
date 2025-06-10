@@ -12,14 +12,12 @@ import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.HeliRocketWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.SmallCannonShellWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.VehicleWeapon;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
 import com.atsuishio.superbwarfare.init.ModSounds;
-import com.atsuishio.superbwarfare.tools.Ammo;
-import com.atsuishio.superbwarfare.tools.CustomExplosion;
-import com.atsuishio.superbwarfare.tools.InventoryTool;
-import com.atsuishio.superbwarfare.tools.ParticleTool;
+import com.atsuishio.superbwarfare.tools.*;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.particles.ParticleTypes;
@@ -39,6 +37,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -55,6 +54,8 @@ import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import static com.atsuishio.superbwarfare.event.ClientMouseHandler.freeCameraPitch;
+import static com.atsuishio.superbwarfare.event.ClientMouseHandler.freeCameraYaw;
 import static com.atsuishio.superbwarfare.tools.ParticleTool.sendParticle;
 
 public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity, HelicopterEntity, WeaponVehicleEntity {
@@ -70,6 +71,12 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
     public int holdTick;
     public int holdPowerTick;
     public float destroyRot;
+
+    public float delta_xo;
+    public float delta_yo;
+
+    public float delta_x;
+    public float delta_y;
 
     public Ah6Entity(PlayMessages.SpawnEntity packet, Level world) {
         this(ModEntities.AH_6.get(), world);
@@ -160,6 +167,8 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
 
     @Override
     public void baseTick() {
+        delta_xo = delta_x;
+        delta_yo = delta_y;
         super.baseTick();
 
         if (this.level() instanceof ServerLevel) {
@@ -240,8 +249,6 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
                     this.entityData.set(POWER, this.entityData.get(POWER) * 0.99f);
                 }
             } else if (passenger instanceof Player) {
-                diffY = Math.clamp(-90f, 90f, Mth.wrapDegrees(passenger.getYHeadRot() - this.getYRot()));
-                diffX = Math.clamp(-60f, 60f, Mth.wrapDegrees(passenger.getXRot() - this.getXRot()));
 
                 if (rightInputDown) {
                     holdTick++;
@@ -253,9 +260,12 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
                     holdTick = 0;
                 }
 
-                this.setYRot(this.getYRot() + Mth.clamp((this.onGround() ? 0.1f : 2f) * diffY * this.entityData.get(PROPELLER_ROT), -10f, 10f));
-                this.setXRot(Mth.clamp(this.getXRot() + ((this.onGround()) ? 0 : 1.5f) * diffX * this.entityData.get(PROPELLER_ROT), -80, 80));
-                this.setZRot(this.getRoll() - this.entityData.get(DELTA_ROT) + (this.onGround() ? 0 : 0.25f) * diffY * this.entityData.get(PROPELLER_ROT));
+                delta_x = ((this.onGround()) ? 0 : 1.5f) * entityData.get(MOUSE_SPEED_Y) * this.entityData.get(PROPELLER_ROT);
+                delta_y = Mth.clamp((this.onGround() ? 0.1f : 2f) * entityData.get(MOUSE_SPEED_X) * this.entityData.get(PROPELLER_ROT), -10f, 10f);
+
+                this.setYRot(this.getYRot() + delta_y);
+                this.setXRot(this.getXRot() + delta_x);
+                this.setZRot(this.getRoll() - this.entityData.get(DELTA_ROT) + (this.onGround() ? 0 : 0.25f) * entityData.get(MOUSE_SPEED_X) * this.entityData.get(PROPELLER_ROT));
             }
 
             if (this.level() instanceof ServerLevel) {
@@ -358,7 +368,13 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
     }
 
     protected void clampRotation(Entity entity) {
-        if (entity == getNthEntity(0) || entity == getNthEntity(1)) {
+        if (entity == getNthEntity(0)) {
+            float f2 = Mth.wrapDegrees(entity.getYRot() - this.getYRot());
+            float f3 = Mth.clamp(f2, -80.0F, 80.0F);
+            entity.yRotO += f3 - f2;
+            entity.setYRot(entity.getYRot() + f3 - f2);
+            entity.setYBodyRot(this.getYRot());
+        } else if (entity == getNthEntity(1)) {
             float f = Mth.wrapDegrees(entity.getXRot());
             float f1 = Mth.clamp(f, -80.0F, 80F);
             entity.xRotO += f1 - f;
@@ -431,7 +447,11 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
     }
 
     public void copyEntityData(Entity entity) {
-        if (entity == getNthEntity(0) || entity == getNthEntity(1)) {
+        if (entity == getNthEntity(0)) {
+            entity.setYHeadRot(entity.getYHeadRot() + delta_y);
+            entity.setYRot(entity.getYRot() + delta_y);
+            entity.setYBodyRot(this.getYRot());
+        } else if (entity == getNthEntity(1)) {
             float f = Mth.wrapDegrees(entity.getYRot() - getYRot());
             float g = Mth.clamp(f, -105.0f, 105.0f);
             entity.yRotO += g - f;
@@ -495,6 +515,21 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
     }
 
     @Override
+    public Vec3 shootPos(float tickDelta) {
+        Matrix4f transform = getVehicleTransform(tickDelta);
+        Vector4f worldPosition = transformPosition(transform, 0f, -0.83f, 0.8f);
+        return new Vec3(worldPosition.x, worldPosition.y, worldPosition.z);
+    }
+
+    @Override
+    public Vec3 shootVec(float tickDelta) {
+        Matrix4f transform = getVehicleTransform(tickDelta);
+        Vector4f worldPosition = transformPosition(transform, 0, 0, 0);
+        Vector4f worldPosition2 = transformPosition(transform, 0, 0.01f, 1);
+        return new Vec3(worldPosition.x, worldPosition.y, worldPosition.z).vectorTo(new Vec3(worldPosition2.x, worldPosition2.y, worldPosition2.z)).normalize();
+    }
+
+    @Override
     public void vehicleShoot(Player player, int type) {
         boolean hasCreativeAmmo = false;
         for (int i = 0; i < getMaxPassengers() - 1; i++) {
@@ -511,25 +546,26 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
         if (getWeaponIndex(0) == 0) {
             if (this.cannotFire) return;
 
-            x = 1.15f;
-            y = 0.62f - 1.45f;
-            z = 0.8f;
-
             Vector4f worldPosition;
+            Vector4f worldPosition2;
 
             if (fireIndex == 0) {
-                worldPosition = transformPosition(transform, -x, y, z);
+                worldPosition = transformPosition(transform, 1.15f, -0.83f, 0.8f);
+                worldPosition2 = transformPosition(transform, 1.15f + 0.009f - 0.002f, -0.83f + 0.012f, 1.8f);
                 fireIndex = 1;
             } else {
-                worldPosition = transformPosition(transform, x, y, z);
+                worldPosition = transformPosition(transform, -1.15f, -0.83f, 0.8f);
+                worldPosition2 = transformPosition(transform, -1.15f + 0.009f + 0.002f, -0.83f + 0.012f, 1.8f);
                 fireIndex = 0;
             }
+
+            Vec3 shootVec = new Vec3(worldPosition.x, worldPosition.y, worldPosition.z).vectorTo(new Vec3(worldPosition2.x, worldPosition2.y, worldPosition2.z)).normalize();
 
             if (this.entityData.get(AMMO) > 0 || hasCreativeAmmo) {
                 var entityToSpawn = ((SmallCannonShellWeapon) getWeapon(0)).create(player);
 
                 entityToSpawn.setPos(worldPosition.x, worldPosition.y, worldPosition.z);
-                entityToSpawn.shoot(getLookAngle().x, getLookAngle().y + 0.008, getLookAngle().z, 20, 0.15f);
+                entityToSpawn.shoot(shootVec.x, shootVec.y, shootVec.z, 20, 0.15f);
                 level().addFreshEntity(entityToSpawn);
 
                 sendParticle((ServerLevel) this.level(), ParticleTypes.LARGE_SMOKE, worldPosition.x, worldPosition.y, worldPosition.z, 1, 0, 0, 0, 0, false);
@@ -558,24 +594,26 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
             }
 
         } else if (getWeaponIndex(0) == 1 && this.getEntityData().get(LOADED_ROCKET) > 0) {
-            x = 1.7f;
-            y = 0.62f - 1.45f;
-            z = 0.8f;
 
             var heliRocketEntity = ((HeliRocketWeapon) getWeapon(0)).create(player);
 
             Vector4f worldPosition;
+            Vector4f worldPosition2;
 
             if (fireIndex == 0) {
-                worldPosition = transformPosition(transform, -x, y, z);
+                worldPosition = transformPosition(transform, 1.7f, -0.83f, 0.8f);
+                worldPosition2 = transformPosition(transform, 1.7f + 0.009f - 0.0025f, -0.83f + 0.012f, 1.8f);
                 fireIndex = 1;
             } else {
-                worldPosition = transformPosition(transform, x, y, z);
+                worldPosition = transformPosition(transform, -1.7f, -0.83f, 0.8f);
+                worldPosition2 = transformPosition(transform, -1.7f + 0.009f + 0.0025f, -0.83f + 0.012f, 1.8f);
                 fireIndex = 0;
             }
 
+            Vec3 shootVec = new Vec3(worldPosition.x, worldPosition.y, worldPosition.z).vectorTo(new Vec3(worldPosition2.x, worldPosition2.y, worldPosition2.z)).normalize();
+
             heliRocketEntity.setPos(worldPosition.x, worldPosition.y, worldPosition.z);
-            heliRocketEntity.shoot(this.getLookAngle().x, this.getLookAngle().y + 0.008, this.getLookAngle().z, 7, 0.25f);
+            heliRocketEntity.shoot(shootVec.x, shootVec.y, shootVec.z, 7, 0.25f);
             player.level().addFreshEntity(heliRocketEntity);
 
             if (!player.level().isClientSide) {
@@ -658,7 +696,21 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
 
     @Override
     public double getSensitivity(double original, boolean zoom, int seatIndex, boolean isOnGround) {
-        return seatIndex == 0 && !isOnGround ? 0.33 : original;
+        return seatIndex == 0 ? 0 : original;
+    }
+
+    @Override
+    public double getMouseSensitivity() {
+        return 0.15;
+    }
+    @Override
+    public double getMouseSpeedX() {
+        return 0.35;
+    }
+
+    @Override
+    public double getMouseSpeedY() {
+        return 0.2;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -670,5 +722,46 @@ public class Ah6Entity extends ContainerMobileVehicleEntity implements GeoEntity
             return Pair.of(Axis.XP.rotationDegrees(this.getRoll(tickDelta)), Axis.ZP.rotationDegrees(-this.getViewXRot(tickDelta)));
         }
         return Pair.of(Axis.XP.rotationDegrees(-this.getViewXRot(tickDelta)), Axis.ZP.rotationDegrees(-this.getRoll(tickDelta)));
+    }
+
+    public Matrix4f getClientVehicleTransform(float ticks) {
+        Matrix4f transform = new Matrix4f();
+        transform.translate((float) Mth.lerp(ticks, xo, getX()), (float) Mth.lerp(ticks, yo + 1.45f, getY() + 1.45f), (float) Mth.lerp(ticks, zo, getZ()));
+        transform.rotate(Axis.YP.rotationDegrees((float) (-Mth.lerp(ticks, yRotO, getYRot()) + freeCameraYaw)));
+        transform.rotate(Axis.XP.rotationDegrees((float) (Mth.lerp(ticks, xRotO, getXRot()) + freeCameraPitch)));
+        transform.rotate(Axis.ZP.rotationDegrees(Mth.lerp(ticks, prevRoll, getRoll())));
+        return transform;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public @Nullable Vec2 getCameraRotation(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
+        if (this.getSeatIndex(player) == 0) {
+            return new Vec2((float) (getRotY(partialTicks) - 0.5f * Mth.lerp(partialTicks, delta_yo, delta_y) - freeCameraYaw), (float) (getRotX(partialTicks) - 0.5f * Mth.lerp(partialTicks, delta_xo, delta_x) + freeCameraPitch));
+        }
+
+        return super.getCameraRotation(partialTicks, player, false, false);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public Vec3 getCameraPosition(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
+        if (this.getSeatIndex(player) == 0) {
+            Matrix4f transform = getClientVehicleTransform(partialTicks);
+            Vector4f maxCameraPosition = transformPosition(transform, -2.1f, 1, -10 - (float)ClientMouseHandler.custom3pDistanceLerp);
+            Vec3 finalPos = CameraTool.getMaxZoom(transform, maxCameraPosition);
+
+            if (isFirstPerson) {
+                return new Vec3(Mth.lerp(partialTicks, player.xo, player.getX()), Mth.lerp(partialTicks, player.yo + player.getEyeHeight(), player.getEyeY()), Mth.lerp(partialTicks, player.zo, player.getZ()));
+            } else {
+                return finalPos;
+            }
+        }
+        return super.getCameraPosition(partialTicks, player, false, false);
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/aircraft.png");
     }
 }

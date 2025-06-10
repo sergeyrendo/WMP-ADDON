@@ -62,6 +62,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         gunItem(ModItems.TASER);
         gunItem(ModItems.TRACHELIUM);
         gunItem(ModItems.VECTOR);
+        gunItem(ModItems.MP_5);
 
         simpleItem(ModItems.EMPTY_PERK, "perk/");
 
@@ -90,6 +91,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.MISSILE_ENGINE);
         simpleItem(ModItems.FUSEE);
         simpleItem(ModItems.PRIMER);
+        simpleItem(ModItems.BLU_43_MINE);
         simpleItem(ModItems.AP_HEAD);
         simpleItem(ModItems.HE_HEAD);
         simpleItem(ModItems.CANNON_CORE);
@@ -202,6 +204,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         gunBlueprintItem(ModItems.M_2_HB_BLUEPRINT);
         gunBlueprintItem(ModItems.SECONDARY_CATACLYSM_BLUEPRINT);
         gunBlueprintItem(ModItems.INSIDIOUS_BLUEPRINT);
+        gunBlueprintItem(ModItems.MP_5_BLUEPRINT);
 
         // blocks
         evenSimplerBlockItem(ModBlocks.BARBED_WIRE);
@@ -267,11 +270,11 @@ public class ModItemModelProvider extends ItemModelProvider {
                 .guiLight(BlockModel.GuiLight.FRONT)
                 .customLoader(CustomSeparateModelBuilder::begin)
                 .base(base)
-                .perspective(ItemDisplayContext.FIXED, lod)
-                .perspective(ItemDisplayContext.HEAD, lod)
-                .perspective(ItemDisplayContext.GROUND, lod)
-                .perspective(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, lod)
-                .perspective(ItemDisplayContext.THIRD_PERSON_LEFT_HAND, lod)
+//                .perspective(ItemDisplayContext.FIXED, lod)
+//                .perspective(ItemDisplayContext.HEAD, lod)
+//                .perspective(ItemDisplayContext.GROUND, lod)
+//                .perspective(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, lod)
+//                .perspective(ItemDisplayContext.THIRD_PERSON_LEFT_HAND, lod)
                 .perspective(ItemDisplayContext.GUI, icon)
                 .end();
     }

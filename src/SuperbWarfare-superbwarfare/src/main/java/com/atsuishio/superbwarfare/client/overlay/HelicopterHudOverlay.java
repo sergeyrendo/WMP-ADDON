@@ -6,7 +6,6 @@ import com.atsuishio.superbwarfare.client.RenderHelper;
 import com.atsuishio.superbwarfare.entity.vehicle.Ah6Entity;
 import com.atsuishio.superbwarfare.entity.vehicle.base.HelicopterEntity;
 import com.atsuishio.superbwarfare.entity.vehicle.base.MobileVehicleEntity;
-import com.atsuishio.superbwarfare.entity.vehicle.base.VehicleEntity;
 import com.atsuishio.superbwarfare.entity.vehicle.base.WeaponVehicleEntity;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
 import com.atsuishio.superbwarfare.tools.FormatTool;
@@ -31,8 +30,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import org.joml.Math;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 
 import static com.atsuishio.superbwarfare.client.RenderHelper.preciseBlit;
 import static com.atsuishio.superbwarfare.entity.vehicle.base.MobileVehicleEntity.HEAT;
@@ -145,22 +142,17 @@ public class HelicopterHudOverlay implements IGuiOverlay {
 
             }
 
-            Matrix4f transform = getVehicleTransform(mobileVehicle, partialTick);
-            float x0 = 0f;
-            float y0 = 0.65f;
-            float z0 = 0.8f;
-
-            Vector4f worldPosition = transformPosition(transform, x0, y0, z0);
 
             float fovAdjust2 = (float) (Minecraft.getInstance().options.fov().get() / 30) - 1;
             double zoom = 0.96 * 3 + 0.06 * fovAdjust2;
 
-            Vec3 pos = new Vec3(worldPosition.x, worldPosition.y, worldPosition.z).add(mobileVehicle.getViewVector(partialTick).scale(192));
-            Vec3 lookAngle = player.getLookAngle().normalize().scale(pos.distanceTo(cameraPos) * (1 - 1.0 / zoom));
+            Vec3 lookVec = new Vec3(camera.getLookVector());
+            Vec3 pos = iHelicopterEntity.shootPos(partialTick).add(iHelicopterEntity.shootVec(partialTick).scale(192));
+            Vec3 lookAngle = lookVec.normalize().scale(pos.distanceTo(cameraPos) * (1 - 1.0 / zoom));
 
             var cPos = cameraPos.add(lookAngle);
 
-            Vec3 p = RenderHelper.worldToScreen(new Vec3(worldPosition.x, worldPosition.y, worldPosition.z).add(mobileVehicle.getViewVector(partialTick).scale(192)), ClientEventHandler.zoomVehicle ? cPos : cameraPos);
+            Vec3 p = RenderHelper.worldToScreen(iHelicopterEntity.shootPos(partialTick).add(mobileVehicle.getViewVector(partialTick).scale(192)), ClientEventHandler.zoomVehicle ? cPos : cameraPos);
 
             if (p != null) {
                 poseStack.pushPose();
@@ -170,7 +162,7 @@ public class HelicopterHudOverlay implements IGuiOverlay {
                 if (mc.options.getCameraType() == CameraType.FIRST_PERSON) {
                     preciseBlit(guiGraphics, Mod.loc("textures/screens/helicopter/crosshair_ind.png"), x - 8, y - 8, 0, 0, 16, 16, 16, 16);
                     renderKillIndicator(guiGraphics, x - 7.5f + (float) (2 * (Math.random() - 0.5f)), y - 7.5f + (float) (2 * (Math.random() - 0.5f)));
-                } else if (mc.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
+                } else if (mc.options.getCameraType() != CameraType.FIRST_PERSON) {
                     poseStack.pushPose();
                     poseStack.rotateAround(Axis.ZP.rotationDegrees(iHelicopterEntity.getRotZ(partialTick)), x, y, 0);
                     preciseBlit(guiGraphics, Mod.loc("textures/screens/drone.png"), x - 8, y - 8, 0, 0, 16, 16, 16, 16);
@@ -212,19 +204,6 @@ public class HelicopterHudOverlay implements IGuiOverlay {
         float diffX = Mth.wrapDegrees(Mth.lerp(ticks, player.xRotO, player.getXRot()) - Mth.lerp(ticks, heli.xRotO, heli.getXRot())) * 0.072f;
 
         preciseBlit(guiGraphics, Mod.loc("textures/screens/helicopter/heli_driver_angle.png"), k + diffY, l + diffX, 0, 0.0F, i, j, i, j);
-    }
-
-    public static Matrix4f getVehicleTransform(VehicleEntity vehicle, float partialTicks) {
-        Matrix4f transform = new Matrix4f();
-        transform.translate((float) Mth.lerp(partialTicks, vehicle.xo, vehicle.getX()), (float) Mth.lerp(partialTicks, vehicle.yo + 1.45, vehicle.getY() + 1.45), (float) Mth.lerp(partialTicks, vehicle.zo, vehicle.getZ()));
-        transform.rotate(Axis.YP.rotationDegrees(-vehicle.getYRot()));
-        transform.rotate(Axis.XP.rotationDegrees(vehicle.getXRot()));
-        transform.rotate(Axis.ZP.rotationDegrees(vehicle.getRoll()));
-        return transform;
-    }
-
-    public static Vector4f transformPosition(Matrix4f transform, float x, float y, float z) {
-        return transform.transform(new Vector4f(x, y, z, 1));
     }
 
     public static double length(double x, double y, double z) {

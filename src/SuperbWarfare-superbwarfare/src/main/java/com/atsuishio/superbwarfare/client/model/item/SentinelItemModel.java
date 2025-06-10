@@ -4,7 +4,6 @@ import com.atsuishio.superbwarfare.Mod;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
-import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.sniper.SentinelItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -13,9 +12,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.model.GeoModel;
 
-public class SentinelItemModel extends GeoModel<SentinelItem> {
+public class SentinelItemModel extends CustomGunModel<SentinelItem> {
 
     @Override
     public ResourceLocation getAnimationResource(SentinelItem animatable) {
@@ -33,17 +31,27 @@ public class SentinelItemModel extends GeoModel<SentinelItem> {
     }
 
     @Override
-    public void setCustomAnimations(SentinelItem animatable, long instanceId, AnimationState animationState) {
+    public ResourceLocation getLODModelResource(SentinelItem animatable) {
+        return Mod.loc("geo/lod/sentinel.geo.json");
+    }
+
+    @Override
+    public ResourceLocation getLODTextureResource(SentinelItem animatable) {
+        return Mod.loc("textures/item/lod/sentinel.png");
+    }
+
+    @Override
+    public void setCustomAnimations(SentinelItem animatable, long instanceId, AnimationState<SentinelItem> animationState) {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return;
+        ItemStack stack = player.getMainHandItem();
+        if (shouldCancelRender(stack, animationState)) return;
+
         CoreGeoBone gun = getAnimationProcessor().getBone("bone");
         CoreGeoBone shen = getAnimationProcessor().getBone("shen");
         CoreGeoBone scope = getAnimationProcessor().getBone("scope2");
         CoreGeoBone ammo = getAnimationProcessor().getBone("ammobar");
         CoreGeoBone cb = getAnimationProcessor().getBone("chamber2");
-
-        Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-        ItemStack stack = player.getMainHandItem();
-        if (!(stack.getItem() instanceof GunItem)) return;
 
         float times = 0.6f * (float) Math.min(Minecraft.getInstance().getDeltaFrameTime(), 0.8);
         double zt = ClientEventHandler.zoomTime;

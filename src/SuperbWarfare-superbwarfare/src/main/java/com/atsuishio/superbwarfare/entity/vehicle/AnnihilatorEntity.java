@@ -10,6 +10,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.ThirdPersonCameraPosition
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.LaserWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.VehicleWeapon;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
@@ -100,7 +101,7 @@ public class AnnihilatorEntity extends EnergyVehicleEntity implements GeoEntity,
 
     @Override
     public ThirdPersonCameraPosition getThirdPersonCameraPosition(int index) {
-        return new ThirdPersonCameraPosition(16, 1.3, 0);
+        return new ThirdPersonCameraPosition(16 + 2 * ClientMouseHandler.custom3pDistanceLerp, 1.3, 0);
     }
 
     @Override
@@ -604,6 +605,11 @@ public class AnnihilatorEntity extends EnergyVehicleEntity implements GeoEntity,
         return zoom ? 0.15 : 0.3;
     }
 
+    @Override
+    public boolean isEnclosed(int index) {
+        return true;
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public @Nullable Vec2 getCameraRotation(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
@@ -625,5 +631,10 @@ public class AnnihilatorEntity extends EnergyVehicleEntity implements GeoEntity,
     @OnlyIn(Dist.CLIENT)
     public boolean useFixedCameraPos(Entity entity) {
         return true;
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/defense.png");
     }
 }

@@ -34,6 +34,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -52,6 +53,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @net.minecraftforge.fml.common.Mod.EventBusSubscriber
@@ -337,6 +339,10 @@ public class LivingEventHandler {
             player.getCapability(ModCapabilities.LASER_CAPABILITY).ifPresent(LaserCapability.ILaserCapability::stop);
 
             if (player instanceof ServerPlayer serverPlayer) {
+                if (newStack.getItem() instanceof GunItem) {
+                    checkCopyGuns(newStack, player);
+                }
+
                 if (newStack.getItem() != oldStack.getItem()
                         || newStack.getTag() == null || oldStack.getTag() == null
                         || (newStack.getItem() instanceof GunItem && !GunData.from(newStack).initialized())
@@ -407,6 +413,27 @@ public class LivingEventHandler {
                             Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new DrawClientMessage(true));
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private static void checkCopyGuns(ItemStack stack, Player player) {
+        var data = GunData.from(stack);
+        if (!data.initialized()) return;
+        if (data.data == null) return;
+        var uuid = data.data.getUUID("UUID");
+
+        for (var item : player.getInventory().items) {
+            if (item.equals(stack)) continue;
+            if (item.getItem() instanceof GunItem) {
+                var itemData = GunData.from(item);
+                var dataTag = itemData.data;
+                if (dataTag == null) continue;
+                if (!dataTag.hasUUID("UUID")) continue;
+                if (dataTag.getUUID("UUID").equals(uuid)) {
+                    data.data.putUUID("UUID", UUID.randomUUID());
+                    return;
                 }
             }
         }
@@ -627,7 +654,8 @@ public class LivingEventHandler {
 
     @SubscribeEvent
     public static void onEffectApply(MobEffectEvent.Applicable event) {
-        if (event.getEntity().getVehicle() instanceof ArmedVehicleEntity vehicle && vehicle.hidePassenger(event.getEntity())) {
+        if (event.getEffectInstance().getEffect().getCategory() == MobEffectCategory.HARMFUL &&
+                event.getEntity().getVehicle() instanceof VehicleEntity vehicle && vehicle.isEnclosed(vehicle.getSeatIndex(event.getEntity()))) {
             event.setResult(Event.Result.DENY);
         }
     }

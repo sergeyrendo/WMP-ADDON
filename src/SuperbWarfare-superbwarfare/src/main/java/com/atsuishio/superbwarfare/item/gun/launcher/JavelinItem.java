@@ -34,6 +34,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -43,14 +44,12 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
@@ -58,9 +57,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class JavelinItem extends GunItem implements GeoItem {
-
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+public class JavelinItem extends GunItem {
 
     public JavelinItem() {
         super(new Properties().stacksTo(1).rarity(RarityTool.LEGENDARY));
@@ -70,10 +67,13 @@ public class JavelinItem extends GunItem implements GeoItem {
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer) {
         super.initializeClient(consumer);
         consumer.accept(new IClientItemExtensions() {
-            private final BlockEntityWithoutLevelRenderer renderer = new JavelinItemRenderer();
+            private BlockEntityWithoutLevelRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new JavelinItemRenderer();
+                }
                 return renderer;
             }
 
@@ -89,6 +89,8 @@ public class JavelinItem extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.javelin.idle"));
 
         if (GunData.from(stack).reload.empty()) {
             return event.setAndContinue(RawAnimation.begin().thenPlay("animation.javelin.reload"));
@@ -109,11 +111,6 @@ public class JavelinItem extends GunItem implements GeoItem {
     public void registerControllers(AnimatableManager.ControllerRegistrar data) {
         var idleController = new AnimationController<>(this, "idleController", 4, this::idlePredicate);
         data.add(idleController);
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
     }
 
     @Override
@@ -140,14 +137,12 @@ public class JavelinItem extends GunItem implements GeoItem {
                 }
 
                 Entity targetEntity = EntityFindUtil.findEntity(player.level(), tag.getString("TargetEntity"));
-                Entity seekingEntity = SeekTool.seekEntity(player, player.level(), 512, 8);
-
 
                 if (tag.getInt("GuideType") == 0) {
-                    if (seekingEntity != null && seekingEntity == targetEntity) {
+                    if (targetEntity != null && VectorTool.calculateAngle(player.getViewVector(1), player.getEyePosition().vectorTo(targetEntity.getBoundingBox().getCenter())) < 8) {
                         tag.putInt("SeekTime", tag.getInt("SeekTime") + 1);
-                        if (tag.getInt("SeekTime") > 0 && (!seekingEntity.getPassengers().isEmpty() || seekingEntity instanceof VehicleEntity) && seekingEntity.tickCount % 3 == 0) {
-                            seekingEntity.level().playSound(null, seekingEntity.getOnPos(), seekingEntity instanceof Pig ? SoundEvents.PIG_HURT : ModSounds.LOCKING_WARNING.get(), SoundSource.PLAYERS, 1, 1f);
+                        if (tag.getInt("SeekTime") > 0 && (!targetEntity.getPassengers().isEmpty() || targetEntity instanceof VehicleEntity) && targetEntity.tickCount % 3 == 0) {
+                            targetEntity.level().playSound(null, targetEntity.getOnPos(), targetEntity instanceof Pig ? SoundEvents.PIG_HURT : ModSounds.LOCKING_WARNING.get(), SoundSource.PLAYERS, 1, 1f);
                         }
                     } else {
                         tag.putInt("SeekTime", 0);
@@ -157,12 +152,12 @@ public class JavelinItem extends GunItem implements GeoItem {
                         SoundTool.playLocalSound(serverPlayer, ModSounds.JAVELIN_LOCK.get(), 1, 1);
                     }
 
-                    if (seekingEntity != null && tag.getInt("SeekTime") > 20) {
+                    if (targetEntity != null && tag.getInt("SeekTime") > 20) {
                         if (player instanceof ServerPlayer serverPlayer) {
                             SoundTool.playLocalSound(serverPlayer, ModSounds.JAVELIN_LOCKON.get(), 1, 1);
                         }
-                        if ((!seekingEntity.getPassengers().isEmpty() || seekingEntity instanceof VehicleEntity) && seekingEntity.tickCount % 2 == 0) {
-                            seekingEntity.level().playSound(null, seekingEntity.getOnPos(), seekingEntity instanceof Pig ? SoundEvents.PIG_HURT : ModSounds.LOCKED_WARNING.get(), SoundSource.PLAYERS, 1, 0.95f);
+                        if ((!targetEntity.getPassengers().isEmpty() || targetEntity instanceof VehicleEntity) && targetEntity.tickCount % 2 == 0) {
+                            targetEntity.level().playSound(null, targetEntity.getOnPos(), targetEntity instanceof Pig ? SoundEvents.PIG_HURT : ModSounds.LOCKED_WARNING.get(), SoundSource.PLAYERS, 1, 0.95f);
                         }
                     }
 
@@ -184,6 +179,12 @@ public class JavelinItem extends GunItem implements GeoItem {
                             SoundTool.playLocalSound(serverPlayer, ModSounds.JAVELIN_LOCKON.get(), 1, 1);
                         }
                     }
+                }
+
+                Entity seekingEntity = SeekTool.seekEntity(player, player.level(), 512, 8);
+
+                if (seekingEntity instanceof DecoyEntity) {
+                    tag.putInt("SeekTime", 0);
                 }
             }
         } else {

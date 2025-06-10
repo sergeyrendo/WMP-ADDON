@@ -2,7 +2,6 @@ package com.atsuishio.superbwarfare.entity.vehicle.base;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 
 public interface ArmedVehicleEntity {
 
@@ -77,16 +76,4 @@ public interface ArmedVehicleEntity {
     int zoomFov();
 
     int getWeaponHeat(Player player);
-
-    /**
-     * 释放烟雾诱饵
-     */
-    void releaseSmokeDecoy();
-
-    /**
-     * 在指定位置释放烟雾诱饵
-     *
-     * @param pos 位置
-     */
-    void releaseSmokeDecoy(Vec3 pos);
 }

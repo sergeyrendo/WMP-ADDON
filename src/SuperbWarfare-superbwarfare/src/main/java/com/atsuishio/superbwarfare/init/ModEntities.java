@@ -40,7 +40,13 @@ public class ModEntities {
     public static final RegistryObject<EntityType<SmokeDecoyEntity>> SMOKE_DECOY = register("smoke_decoy",
             EntityType.Builder.<SmokeDecoyEntity>of(SmokeDecoyEntity::new, MobCategory.MISC).setTrackingRange(64).setUpdateInterval(1).noSave().setCustomClientFactory(SmokeDecoyEntity::new).sized(3f, 3f));
     public static final RegistryObject<EntityType<ClaymoreEntity>> CLAYMORE = register("claymore",
-            EntityType.Builder.<ClaymoreEntity>of(ClaymoreEntity::new, MobCategory.MISC).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
+            EntityType.Builder.<ClaymoreEntity>of(ClaymoreEntity::new, MobCategory.MISC).setTrackingRange(64).setUpdateInterval(1).sized(0.25f, 0.25f));
+
+    public static final RegistryObject<EntityType<Blu43Entity>> BLU_43 = register("blu_43",
+            EntityType.Builder.<Blu43Entity>of(Blu43Entity::new, MobCategory.MISC).setTrackingRange(32).setUpdateInterval(1).sized(0.12f, 0.05f));
+
+    public static final RegistryObject<EntityType<Tm62Entity>> TM_62 = register("tm_62",
+            EntityType.Builder.<Tm62Entity>of(Tm62Entity::new, MobCategory.MISC).setTrackingRange(32).setUpdateInterval(1).sized(0.5f, 0.15f));
     public static final RegistryObject<EntityType<C4Entity>> C_4 = register("c4",
             EntityType.Builder.<C4Entity>of(C4Entity::new, MobCategory.MISC).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
     public static final RegistryObject<EntityType<WaterMaskEntity>> WATER_MASK = register("water_mask",

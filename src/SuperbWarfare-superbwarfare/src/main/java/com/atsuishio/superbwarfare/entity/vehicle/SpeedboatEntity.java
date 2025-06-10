@@ -8,6 +8,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.*;
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.ProjectileWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.VehicleWeapon;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
@@ -90,7 +91,7 @@ public class SpeedboatEntity extends ContainerMobileVehicleEntity implements Geo
 
     @Override
     public ThirdPersonCameraPosition getThirdPersonCameraPosition(int index) {
-        return new ThirdPersonCameraPosition(3, 1, 0);
+        return new ThirdPersonCameraPosition(3 + ClientMouseHandler.custom3pDistanceLerp, 1, 0);
     }
 
     @Override
@@ -582,5 +583,10 @@ public class SpeedboatEntity extends ContainerMobileVehicleEntity implements Geo
     @Nullable
     public Pair<Quaternionf, Quaternionf> getPassengerRotation(Entity entity, float tickDelta) {
         return Pair.of(Axis.XP.rotationDegrees(-this.getViewXRot(tickDelta)), Axis.ZP.rotationDegrees(-this.getRoll(tickDelta)));
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/water.png");
     }
 }

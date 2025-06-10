@@ -84,7 +84,7 @@ public class DroneHudOverlay implements IGuiOverlay {
                 boolean lookAtEntity = false;
                 double distance = player.distanceTo(entity);
 
-                BlockHitResult result = entity.level().clip(new ClipContext(cameraPos, cameraPos.add(player.getViewVector(1).scale(512)),
+                BlockHitResult result = entity.level().clip(new ClipContext(cameraPos, cameraPos.add(entity.getViewVector(1).scale(512)),
                         ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
                 Vec3 hitPos = result.getLocation();
 
@@ -92,7 +92,7 @@ public class DroneHudOverlay implements IGuiOverlay {
 
                 double entityRange = 0;
 
-                Entity lookingEntity = TraceTool.camerafFindLookingEntity(player, cameraPos, 512, partialTick);
+                Entity lookingEntity = TraceTool.droneFindLookingEntity(entity, cameraPos, 512, partialTick);
                 if (lookingEntity != null) {
                     lookAtEntity = true;
                     entityRange = entity.distanceTo(lookingEntity);

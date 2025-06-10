@@ -329,7 +329,7 @@ public class KillMessageOverlay implements IGuiOverlay {
         } else {
             if (DamageTypeTool.isCompatGunDamage(record.damageType)) {
                 icon = null;
-                if (TACZGunEventHandler.hasMod() && !TACZGunEventHandler.displayCompat()) {
+                if (TACZGunEventHandler.hasMod() && !TACZGunEventHandler.compatCondition()) {
                     icon = GENERIC;
                 }
             } else {
@@ -391,7 +391,7 @@ public class KillMessageOverlay implements IGuiOverlay {
             } else {
                 if (record.stack.getItem() instanceof GunItem gunItem) {
                     return gunItem.getGunIcon();
-                } else if (TACZGunEventHandler.displayCompat()) {
+                } else if (TACZGunEventHandler.compatCondition()) {
                     return TACZGunEventHandler.getTaczCompatIcon(record.stack);
                 }
             }
@@ -399,7 +399,7 @@ public class KillMessageOverlay implements IGuiOverlay {
             // 如果是枪械击杀，则渲染枪械图标
             if (record.stack.getItem() instanceof GunItem gunItem) {
                 return gunItem.getGunIcon();
-            } else if (TACZGunEventHandler.displayCompat()) {
+            } else if (TACZGunEventHandler.compatCondition()) {
                 return TACZGunEventHandler.getTaczCompatIcon(record.stack);
             }
 

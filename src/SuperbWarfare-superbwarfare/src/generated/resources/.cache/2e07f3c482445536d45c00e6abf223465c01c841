@@ -1,4 +1,4 @@
-// 1.20.1	2025-05-25T00:54:04.2353858	Tags for minecraft:item mod id superbwarfare
+// 1.20.1	2025-05-29T11:54:39.0975962	Tags for minecraft:item mod id superbwarfare
 cf8d49a8d2872286d1a9c3d4a7e1c2b7690db0b8 data/forge/tags/items/dusts.json
 0fa06c2ff83bf09797e3ddff90f62d1124e645b4 data/forge/tags/items/dusts/coal_coke.json
 295ddf906b7133a0558d03e9a60eea18281fe430 data/forge/tags/items/dusts/iron.json
@@ -32,14 +32,14 @@ b2461a0f5cf318dde060f2b111a01c77234a0681 data/superbwarfare/tags/items/blueprint
 3c4adac76810982986b6cd9845192ae8416324f4 data/superbwarfare/tags/items/blueprint/epic.json
 702f9ef2b959fc0d546443968556ea7db0672b04 data/superbwarfare/tags/items/blueprint/legendary.json
 3154110c8f6b5d1473d558b7d0d2f752396dff34 data/superbwarfare/tags/items/blueprint/rare.json
-bb51d8b21c5e9e23551a66933577241e65af2fac data/superbwarfare/tags/items/gun.json
+7883255b8f5dfc9431da131803ea584c3c8f0a6b data/superbwarfare/tags/items/gun.json
 0ab1b2a8f5433e0d1b03446a9d0d9428e9d64feb data/superbwarfare/tags/items/heavy_weapon.json
 3cc00928c041f710b50eb1f7a817e0345f6f96b3 data/superbwarfare/tags/items/ingots/cemented_carbide.json
 9b38dc57a6ea6b75f183dfe6376190aaf5b575f0 data/superbwarfare/tags/items/ingots/steel.json
 d39c5c787667ce78c214bc2fbd4931891ebaf936 data/superbwarfare/tags/items/launcher.json
 ab580f3989177c0589c43ca346db571011600187 data/superbwarfare/tags/items/launcher/grenade.json
 a53020091752016da6602ee1b8b7e08823614344 data/superbwarfare/tags/items/military_armor.json
-a38ce936246513bfdbf9c0b58807ae361c6edd78 data/superbwarfare/tags/items/normal_gun.json
+59191d01728862b5bf61c1185178f60fa59cfcd5 data/superbwarfare/tags/items/normal_gun.json
 aaa533157491a82b8e23b2914deef67c4078cbed data/superbwarfare/tags/items/rifle.json
 a249d9d052cdc24b34e0e51ab991329f6c76e8ab data/superbwarfare/tags/items/shotgun.json
 4aca0fa3f8b9f2a4920041e35e46dae7e93d5482 data/superbwarfare/tags/items/smg.json

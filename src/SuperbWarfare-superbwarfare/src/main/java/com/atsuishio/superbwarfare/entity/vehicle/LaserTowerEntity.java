@@ -1,5 +1,6 @@
 package com.atsuishio.superbwarfare.entity.vehicle;
 
+import com.atsuishio.superbwarfare.Mod;
 import com.atsuishio.superbwarfare.config.server.VehicleConfig;
 import com.atsuishio.superbwarfare.entity.TargetEntity;
 import com.atsuishio.superbwarfare.entity.vehicle.base.AutoAimable;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.OldUsersConverter;
@@ -74,7 +76,9 @@ public class LaserTowerEntity extends EnergyVehicleEntity implements GeoEntity, 
 
     public LaserTowerEntity(LivingEntity owner, Level level) {
         super(ModEntities.LASER_TOWER.get(), level);
-        this.setOwnerUUID(owner.getUUID());
+        if (owner != null) {
+            this.setOwnerUUID(owner.getUUID());
+        }
     }
 
     public boolean isOwnedBy(LivingEntity pEntity) {
@@ -134,8 +138,6 @@ public class LaserTowerEntity extends EnergyVehicleEntity implements GeoEntity, 
         return this.entityData.get(OWNER_UUID).orElse(null);
     }
 
-   
-
     @Override
     public @NotNull InteractionResult interact(Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getMainHandItem();
@@ -148,13 +150,20 @@ public class LaserTowerEntity extends EnergyVehicleEntity implements GeoEntity, 
                 this.remove(RemovalReason.DISCARDED);
                 this.discard();
                 return InteractionResult.SUCCESS;
-            } else if (!entityData.get(ACTIVE)) {
-                entityData.set(ACTIVE, true);
-                this.setOwnerUUID(player.getUUID());
-                if (player instanceof ServerPlayer serverPlayer) {
-                    serverPlayer.level().playSound(null, serverPlayer.getOnPos(), SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5F, 1);
+            } else {
+                if (this.getOwnerUUID() == null) {
+                    this.setOwnerUUID(player.getUUID());
                 }
-                return InteractionResult.sidedSuccess(this.level().isClientSide());
+                if (this.getOwner() == player) {
+                    entityData.set(ACTIVE, !entityData.get(ACTIVE));
+
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        serverPlayer.level().playSound(null, serverPlayer.getOnPos(), SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5F, 1);
+                    }
+                    return InteractionResult.sidedSuccess(this.level().isClientSide());
+                } else {
+                    return InteractionResult.PASS;
+                }
             }
         }
         return InteractionResult.sidedSuccess(this.level().isClientSide());
@@ -229,7 +238,7 @@ public class LaserTowerEntity extends EnergyVehicleEntity implements GeoEntity, 
         Vec3 barrelRootPos = new Vec3(this.getX(), this.getY() + 1.390625f, this.getZ());
 
         if (entityData.get(TARGET_UUID).equals("none") && tickCount % 10 == 0 && entityData.get(COOL_DOWN) == 0) {
-            Entity naerestEntity = seekNearLivingEntity(this, barrelRootPos,-40, 90,1,72, 0.01);
+            Entity naerestEntity = seekNearLivingEntity(this, barrelRootPos, -40, 90, 1, 72, 0.01);
             if (naerestEntity != null) {
                 entityData.set(TARGET_UUID, naerestEntity.getStringUUID());
             }
@@ -366,5 +375,10 @@ public class LaserTowerEntity extends EnergyVehicleEntity implements GeoEntity, 
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/defense.png");
     }
 }

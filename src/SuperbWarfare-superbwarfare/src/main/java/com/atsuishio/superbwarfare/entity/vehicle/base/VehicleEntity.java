@@ -83,6 +83,8 @@ public abstract class VehicleEntity extends Entity {
     public static final EntityDataAccessor<String> LAST_ATTACKER_UUID = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<String> LAST_DRIVER_UUID = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.STRING);
     public static final EntityDataAccessor<Float> DELTA_ROT = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
+    public static final EntityDataAccessor<Float> MOUSE_SPEED_X = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
+    public static final EntityDataAccessor<Float> MOUSE_SPEED_Y = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
     public static final EntityDataAccessor<IntList> SELECTED_WEAPON = SynchedEntityData.defineId(VehicleEntity.class, ModSerializers.INT_LIST_SERIALIZER.get());
     public static final EntityDataAccessor<Integer> HEAT = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
 
@@ -112,6 +114,12 @@ public abstract class VehicleEntity extends Entity {
     public float gunXRotO;
 
     public boolean cannotFire;
+
+
+    public void mouseInput(double x, double y) {
+        entityData.set(MOUSE_SPEED_X, (float) x);
+        entityData.set(MOUSE_SPEED_Y, (float) y);
+    }
 
     // 自定义骑乘
     private final List<Entity> orderedPassengers = generatePassengersList();
@@ -284,6 +292,8 @@ public abstract class VehicleEntity extends Entity {
         this.entityData.define(LAST_ATTACKER_UUID, "undefined");
         this.entityData.define(LAST_DRIVER_UUID, "undefined");
         this.entityData.define(DELTA_ROT, 0f);
+        this.entityData.define(MOUSE_SPEED_X, 0f);
+        this.entityData.define(MOUSE_SPEED_Y, 0f);
         this.entityData.define(HEAT, 0);
 
         if (this instanceof WeaponVehicleEntity weaponVehicle && weaponVehicle.getAllWeapons().length > 0) {
@@ -596,6 +606,16 @@ public abstract class VehicleEntity extends Entity {
         while (getYRot() <= -180F) {
             setYRot(getYRot() + 360F);
             yRotO = delta + getYRot();
+        }
+
+        float deltaX = Math.abs(getXRot() - xRotO);
+        while (getXRot() > 180F) {
+            setXRot(getXRot() - 360F);
+            xRotO = getXRot() - deltaX;
+        }
+        while (getXRot() <= -180F) {
+            setXRot(getXRot() + 360F);
+            xRotO = deltaX + getXRot();
         }
 
         float deltaZ = Math.abs(getRoll() - prevRoll);
@@ -982,6 +1002,18 @@ public abstract class VehicleEntity extends Entity {
         return getEyePosition();
     }
 
+    public double getMouseSensitivity() {
+        return 0.1;
+    }
+
+    public double getMouseSpeedX() {
+        return 0.4;
+    }
+
+    public double getMouseSpeedY() {
+        return 0.4;
+    }
+
     @Override
     public @NotNull Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
@@ -1002,6 +1034,23 @@ public abstract class VehicleEntity extends Entity {
      */
     public double getSensitivity(double original, boolean zoom, int seatIndex, boolean isOnGround) {
         return original;
+    }
+
+    /**
+     * 载具在集装箱物品上显示的贴图
+     */
+    @Nullable
+    public ResourceLocation getVehicleItemIcon() {
+        return null;
+    }
+
+    /**
+     * 判断每个位置上是否是封闭载具（封闭载具座位具有免疫负面效果等功能）
+     *
+     * @param index 位置
+     */
+    public boolean isEnclosed(int index) {
+        return false;
     }
 
     /**
@@ -1047,7 +1096,8 @@ public abstract class VehicleEntity extends Entity {
 
     /**
      * 获取视角旋转
-     * @param zoom 是否在载具上瞄准
+     *
+     * @param zoom          是否在载具上瞄准
      * @param isFirstPerson 是否是第一人称视角
      */
     @OnlyIn(Dist.CLIENT)
@@ -1058,7 +1108,8 @@ public abstract class VehicleEntity extends Entity {
 
     /**
      * 获取视角位置
-     * @param zoom 是否在载具上瞄准
+     *
+     * @param zoom          是否在载具上瞄准
      * @param isFirstPerson 是否是第一人称视角
      */
     @OnlyIn(Dist.CLIENT)
@@ -1076,6 +1127,7 @@ public abstract class VehicleEntity extends Entity {
 
     /**
      * 获取载具上玩家的旋转
+     *
      * @return X轴旋转，Z轴旋转
      */
     @OnlyIn(Dist.CLIENT)

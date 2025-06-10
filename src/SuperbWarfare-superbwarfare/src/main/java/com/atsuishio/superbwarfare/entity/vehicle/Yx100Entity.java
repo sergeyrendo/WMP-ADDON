@@ -14,6 +14,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.weapon.CannonShellWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.ProjectileWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.SwarmDroneWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.VehicleWeapon;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
@@ -181,8 +182,8 @@ public class Yx100Entity extends ContainerMobileVehicleEntity implements GeoEnti
     @Override
     public ThirdPersonCameraPosition getThirdPersonCameraPosition(int index) {
         return switch (index) {
-            case 0 -> new ThirdPersonCameraPosition(5, 1.5, -0.8669625);
-            case 1 -> new ThirdPersonCameraPosition(-1, 0.5, 0);
+            case 0 -> new ThirdPersonCameraPosition(5 + ClientMouseHandler.custom3pDistanceLerp, 1.5, -0.8669625);
+            case 1 -> new ThirdPersonCameraPosition(-1 + 0.5 * ClientMouseHandler.custom3pDistanceLerp, 0.5, 0);
             default -> null;
         };
     }
@@ -225,7 +226,7 @@ public class Yx100Entity extends ContainerMobileVehicleEntity implements GeoEnti
     @Override
     public DamageModifier getDamageModifier() {
         return super.getDamageModifier()
-                .custom((source, damage) -> getSourceAngle(source, 1f) * damage)
+                .custom((source, damage) -> getSourceAngle(source, 0.5f) * damage)
                 .custom((source, damage) -> {
                     if (source.getDirectEntity() instanceof AerialBombEntity) {
                         return 3f * damage;
@@ -1259,6 +1260,11 @@ public class Yx100Entity extends ContainerMobileVehicleEntity implements GeoEnti
         } else return original;
     }
 
+    @Override
+    public boolean isEnclosed(int index) {
+        return index != 2;
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public @Nullable Vec2 getCameraRotation(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
@@ -1287,5 +1293,10 @@ public class Yx100Entity extends ContainerMobileVehicleEntity implements GeoEnti
             }
         }
         return super.getCameraPosition(partialTicks, player, false, false);
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/land.png");
     }
 }

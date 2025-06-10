@@ -20,6 +20,7 @@ import com.atsuishio.superbwarfare.item.gun.rifle.*;
 import com.atsuishio.superbwarfare.item.gun.shotgun.Aa12Item;
 import com.atsuishio.superbwarfare.item.gun.shotgun.HomemadeShotgunItem;
 import com.atsuishio.superbwarfare.item.gun.shotgun.M870Item;
+import com.atsuishio.superbwarfare.item.gun.smg.Mp5Item;
 import com.atsuishio.superbwarfare.item.gun.smg.VectorItem;
 import com.atsuishio.superbwarfare.item.gun.sniper.*;
 import com.atsuishio.superbwarfare.item.gun.special.BocekItem;
@@ -57,6 +58,7 @@ public class ModItems {
     public static final RegistryObject<Item> M_1911 = GUNS.register("m_1911", M1911Item::new);
     public static final RegistryObject<Item> HOMEMADE_SHOTGUN = GUNS.register("homemade_shotgun", HomemadeShotgunItem::new);
     public static final RegistryObject<Item> TRACHELIUM = GUNS.register("trachelium", Trachelium::new);
+    public static final RegistryObject<Item> MP_5 = GUNS.register("mp_5", Mp5Item::new);
     public static final RegistryObject<Item> VECTOR = GUNS.register("vector", VectorItem::new);
     public static final RegistryObject<Item> AK_47 = GUNS.register("ak_47", AK47Item::new);
     public static final RegistryObject<Item> AK_12 = GUNS.register("ak_12", AK12Item::new);
@@ -115,7 +117,9 @@ public class ModItems {
     public static final RegistryObject<Item> HAND_GRENADE = AMMO.register("hand_grenade", HandGrenade::new);
     public static final RegistryObject<Item> RGO_GRENADE = AMMO.register("rgo_grenade", RgoGrenade::new);
     public static final RegistryObject<Item> CLAYMORE_MINE = AMMO.register("claymore_mine", ClaymoreMine::new);
+    public static final RegistryObject<Item> TM_62 = AMMO.register("tm_62", Tm62::new);
     public static final RegistryObject<Item> C4_BOMB = AMMO.register("c4_bomb", C4Bomb::new);
+    public static final RegistryObject<Item> BLU_43_MINE = AMMO.register("blu_43_mine", Blu43Mine::new);
     public static final RegistryObject<Item> SMALL_SHELL = AMMO.register("small_shell", SmallShellItem::new);
     public static final RegistryObject<Item> ROCKET_70 = AMMO.register("rocket_70", Rocket70::new);
     public static final RegistryObject<Item> WIRE_GUIDE_MISSILE = AMMO.register("wire_guide_missile", WireGuideMissile::new);
@@ -231,6 +235,7 @@ public class ModItems {
     public static final RegistryObject<Item> RPK_BLUEPRINT = ITEMS.register("rpk_blueprint", () -> new BlueprintItem(Rarity.EPIC));
     public static final RegistryObject<Item> SKS_BLUEPRINT = ITEMS.register("sks_blueprint", () -> new BlueprintItem(Rarity.RARE));
     public static final RegistryObject<Item> NTW_20_BLUEPRINT = ITEMS.register("ntw_20_blueprint", () -> new BlueprintItem(RarityTool.LEGENDARY));
+    public static final RegistryObject<Item> MP_5_BLUEPRINT = ITEMS.register("mp_5_blueprint", () -> new BlueprintItem(Rarity.RARE));
     public static final RegistryObject<Item> VECTOR_BLUEPRINT = ITEMS.register("vector_blueprint", () -> new BlueprintItem(Rarity.EPIC));
     public static final RegistryObject<Item> MINIGUN_BLUEPRINT = ITEMS.register("minigun_blueprint", () -> new BlueprintItem(RarityTool.LEGENDARY));
     public static final RegistryObject<Item> MK_14_BLUEPRINT = ITEMS.register("mk_14_blueprint", () -> new BlueprintItem(Rarity.EPIC));

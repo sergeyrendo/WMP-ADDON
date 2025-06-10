@@ -5,6 +5,8 @@ import com.atsuishio.superbwarfare.advancement.CriteriaRegister;
 import com.atsuishio.superbwarfare.config.server.ExplosionConfig;
 import com.atsuishio.superbwarfare.config.server.VehicleConfig;
 import com.atsuishio.superbwarfare.entity.vehicle.base.MobileVehicleEntity;
+import com.atsuishio.superbwarfare.entity.vehicle.base.ThirdPersonCameraPosition;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
@@ -73,6 +75,11 @@ public class WheelChairEntity extends MobileVehicleEntity implements GeoEntity {
             this.setDeltaMovement(this.getDeltaMovement().add(new Vec3(pPlayer.position().vectorTo(this.position()).toVector3f()).scale(0.5 * f * pPlayer.getDeltaMovement().length())));
             this.setYRot(pPlayer.getYHeadRot());
         }
+    }
+
+    @Override
+    public ThirdPersonCameraPosition getThirdPersonCameraPosition(int index) {
+        return new ThirdPersonCameraPosition(0.5 * ClientMouseHandler.custom3pDistanceLerp, 0, 0);
     }
 
     @Override
@@ -326,5 +333,10 @@ public class WheelChairEntity extends MobileVehicleEntity implements GeoEntity {
     @Nullable
     public Pair<Quaternionf, Quaternionf> getPassengerRotation(Entity entity, float tickDelta) {
         return Pair.of(Axis.XP.rotationDegrees(-this.getViewXRot(tickDelta)), Axis.ZP.rotationDegrees(-this.getRoll(tickDelta)));
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/otto.png");
     }
 }

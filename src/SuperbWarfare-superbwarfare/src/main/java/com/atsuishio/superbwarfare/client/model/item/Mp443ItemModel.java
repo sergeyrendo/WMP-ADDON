@@ -5,7 +5,6 @@ import com.atsuishio.superbwarfare.client.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
-import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.handgun.Mp443Item;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -14,16 +13,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.model.GeoModel;
 
-public class Mp443ItemModel extends GeoModel<Mp443Item> {
+public class Mp443ItemModel extends CustomGunModel<Mp443Item> {
 
     public static float fireRotY = 0f;
     public static float fireRotZ = 0f;
 
     @Override
     public ResourceLocation getAnimationResource(Mp443Item animatable) {
-        return Mod.loc("animations/glock_17.animation.json");
+        return Mod.loc("animations/mp_443.animation.json");
     }
 
     @Override
@@ -37,16 +35,25 @@ public class Mp443ItemModel extends GeoModel<Mp443Item> {
     }
 
     @Override
-    public void setCustomAnimations(Mp443Item animatable, long instanceId, AnimationState animationState) {
-        CoreGeoBone gun = getAnimationProcessor().getBone("bone");
-        CoreGeoBone slide = getAnimationProcessor().getBone("huatao");
-        CoreGeoBone bullet = getAnimationProcessor().getBone("bullet");
-        CoreGeoBone hammer = getAnimationProcessor().getBone("trigger");
+    public ResourceLocation getLODModelResource(Mp443Item animatable) {
+        return Mod.loc("geo/lod/mp_443.geo.json");
+    }
 
+    @Override
+    public ResourceLocation getLODTextureResource(Mp443Item animatable) {
+        return Mod.loc("textures/item/lod/mp_443.png");
+    }
+
+    @Override
+    public void setCustomAnimations(Mp443Item animatable, long instanceId, AnimationState<Mp443Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
-        if (!(stack.getItem() instanceof GunItem)) return;
+        if (shouldCancelRender(stack, animationState)) return;
+
+        CoreGeoBone gun = getAnimationProcessor().getBone("bone");
+        CoreGeoBone bullet = getAnimationProcessor().getBone("bullet");
+        CoreGeoBone hammer = getAnimationProcessor().getBone("trigger");
 
         float times = 0.6f * (float) Math.min(Minecraft.getInstance().getDeltaFrameTime(), 0.8);
         double zt = ClientEventHandler.zoomTime;
@@ -81,9 +88,13 @@ public class Mp443ItemModel extends GeoModel<Mp443Item> {
         body.setRotZ((float) (body.getRotZ() * (1 - 0.65 * zt)));
 
         CrossHairOverlay.gunRot = body.getRotZ();
-
-        slide.setPosZ(1.5f * (float) fp);
         hammer.setRotX((120 * Mth.DEG_TO_RAD * (float) fp));
+
+        CoreGeoBone huatao = getAnimationProcessor().getBone("huatao");
+        huatao.setPosZ(1.5f * (float) ClientEventHandler.firePos);
+        if (GunData.from(stack).holdOpen.get()) {
+            huatao.setPosZ(1.5f);
+        }
 
         ClientEventHandler.gunRootMove(getAnimationProcessor());
 
@@ -110,7 +121,6 @@ public class Mp443ItemModel extends GeoModel<Mp443Item> {
 
         CoreGeoBone shell = getAnimationProcessor().getBone("shell");
         if (GunData.from(stack).holdOpen.get()) {
-            slide.setPosZ(1.5f);
             bullet.setScaleX(0);
             bullet.setScaleY(0);
             bullet.setScaleZ(0);

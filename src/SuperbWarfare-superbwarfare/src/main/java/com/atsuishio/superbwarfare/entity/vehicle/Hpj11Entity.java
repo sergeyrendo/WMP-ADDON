@@ -8,6 +8,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.base.*;
 import com.atsuishio.superbwarfare.entity.vehicle.damage.DamageModifier;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.SmallCannonShellWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.VehicleWeapon;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
@@ -111,7 +112,7 @@ public class Hpj11Entity extends ContainerMobileVehicleEntity implements GeoEnti
 
     @Override
     public ThirdPersonCameraPosition getThirdPersonCameraPosition(int index) {
-        return new ThirdPersonCameraPosition(2, 0.75, 0);
+        return new ThirdPersonCameraPosition(2 + 0.75 * ClientMouseHandler.custom3pDistanceLerp, 0.75, 0);
     }
 
     @Override
@@ -169,13 +170,20 @@ public class Hpj11Entity extends ContainerMobileVehicleEntity implements GeoEnti
                 this.remove(RemovalReason.DISCARDED);
                 this.discard();
                 return InteractionResult.SUCCESS;
-            } else if (!entityData.get(ACTIVE)) {
-                entityData.set(ACTIVE, true);
-                this.setOwnerUUID(player.getUUID());
-                if (player instanceof ServerPlayer serverPlayer) {
-                    serverPlayer.level().playSound(null, serverPlayer.getOnPos(), SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5F, 1);
+            } else {
+                if (this.getOwnerUUID() == null) {
+                    this.setOwnerUUID(player.getUUID());
                 }
-                return InteractionResult.sidedSuccess(this.level().isClientSide());
+                if (this.getOwner() == player) {
+                    entityData.set(ACTIVE, !entityData.get(ACTIVE));
+
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        serverPlayer.level().playSound(null, serverPlayer.getOnPos(), SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.5F, 1);
+                    }
+                    return InteractionResult.sidedSuccess(this.level().isClientSide());
+                } else {
+                    return InteractionResult.PASS;
+                }
             }
         }
         entityData.set(TARGET_UUID, "none");
@@ -592,6 +600,11 @@ public class Hpj11Entity extends ContainerMobileVehicleEntity implements GeoEnti
         return zoom ? 0.25 : 0.3;
     }
 
+    @Override
+    public boolean isEnclosed(int index) {
+        return true;
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public @Nullable Vec2 getCameraRotation(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
@@ -612,5 +625,10 @@ public class Hpj11Entity extends ContainerMobileVehicleEntity implements GeoEnti
             }
         }
         return super.getCameraPosition(partialTicks, player, false, false);
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/defense.png");
     }
 }

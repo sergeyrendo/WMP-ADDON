@@ -155,9 +155,6 @@ public class VehicleConfig {
     public static ForgeConfigSpec.IntValue A_10_ROCKET_EXPLOSION_DAMAGE;
     public static ForgeConfigSpec.DoubleValue A_10_ROCKET_EXPLOSION_RADIUS;
 
-    public static ForgeConfigSpec.IntValue TYPHOON_MAX_ENERGY;
-    public static ForgeConfigSpec.IntValue TYPHOON_HP;
-
     public static void init(ForgeConfigSpec.Builder builder) {
         builder.push("vehicle");
 
@@ -180,11 +177,11 @@ public class VehicleConfig {
 
         builder.push("repair");
 
-        builder.comment("The cooldown of vehicle repair. Set a negative value to disable vehicle repair");
-        REPAIR_COOLDOWN = builder.defineInRange("repair_cooldown", 200, -1, 10000000);
+        builder.comment("The default cooldown of vehicle repair. Set a negative value to disable vehicle repair");
+        REPAIR_COOLDOWN = builder.defineInRange("repair_cooldown", 200, -1, 100000000);
 
-        builder.comment("The amount of health restored per tick when a vehicle is self-repairing");
-        REPAIR_AMOUNT = builder.defineInRange("repair_amount", 0.05d, 0, 10000000);
+        builder.comment("The default amount of health restored per tick when a vehicle is self-repairing");
+        REPAIR_AMOUNT = builder.defineInRange("repair_amount", 0.05d, -100000000, 100000000);
 
         builder.pop();
 
@@ -533,16 +530,6 @@ public class VehicleConfig {
 
         builder.comment("The rocket explosion radius of A-10");
         A_10_ROCKET_EXPLOSION_RADIUS = builder.defineInRange("A_10_rocket_explosion_radius", 6d, 1, 10000000);
-
-        builder.pop();
-
-        builder.push("Typhoon");
-
-        builder.comment("Максимальный запас энергии Тайфуна");
-        TYPHOON_MAX_ENERGY = builder.defineInRange("typhoon_max_energy", 1000, 1, 10000000);
-
-        builder.comment("Максимальное здоровье Тайфуна");
-        TYPHOON_HP = builder.defineInRange("typhoon_hp", 100, 1, 10000000);
 
         builder.pop();
 

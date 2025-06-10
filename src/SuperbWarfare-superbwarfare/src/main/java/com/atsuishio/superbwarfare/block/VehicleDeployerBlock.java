@@ -24,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@SuppressWarnings("deprecation")
 public class VehicleDeployerBlock extends BaseEntityBlock {
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -47,6 +46,8 @@ public class VehicleDeployerBlock extends BaseEntityBlock {
         if (level.isClientSide
                 || !(level.getBlockEntity(pos) instanceof VehicleDeployerBlockEntity blockEntity)
         ) return InteractionResult.SUCCESS;
+
+        if (!player.isCreative()) return InteractionResult.FAIL;
 
         var stack = player.getItemInHand(hand);
         if (stack.getItem() != ModItems.CONTAINER.get()) {
@@ -84,7 +85,7 @@ public class VehicleDeployerBlock extends BaseEntityBlock {
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState pState) {
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState pState) {
         return RenderShape.MODEL;
     }
 

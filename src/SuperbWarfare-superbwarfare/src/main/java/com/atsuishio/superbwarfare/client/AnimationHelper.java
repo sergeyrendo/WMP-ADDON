@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3f;
@@ -160,7 +161,7 @@ public class AnimationHelper {
 
     public static void renderArms(LocalPlayer localPlayer, ItemDisplayContext transformType, PoseStack stack, String name, GeoBone bone,
                                   MultiBufferSource currentBuffer, RenderType renderType, int packedLightIn, boolean useOldHandRender) {
-        if (transformType.firstPerson()) {
+        if (transformType != null && transformType.firstPerson()) {
             Minecraft mc = Minecraft.getInstance();
 
             if (localPlayer == null) {
@@ -179,6 +180,13 @@ public class AnimationHelper {
             VertexConsumer armBuilder = currentBuffer.getBuffer(RenderType.entitySolid(loc));
             VertexConsumer sleeveBuilder = currentBuffer.getBuffer(RenderType.entityTranslucent(loc));
             if (name.equals("Lefthand")) {
+                if (!model.leftArm.visible) {
+                    model.leftArm.visible = true;
+                }
+                if (!model.leftSleeve.visible && mc.options.isModelPartEnabled(PlayerModelPart.LEFT_SLEEVE)) {
+                    model.leftSleeve.visible = true;
+                }
+
                 stack.translate(-1.0f * CustomGunRenderer.SCALE_RECIPROCAL, 2.0f * CustomGunRenderer.SCALE_RECIPROCAL, 0.0f);
                 if (useOldHandRender) {
                     AnimationHelper.renderPartOverBone(model.leftArm, bone, stack, armBuilder, packedLightIn, OverlayTexture.NO_OVERLAY, 1);
@@ -188,6 +196,13 @@ public class AnimationHelper {
                     AnimationHelper.renderPartOverBone2(model.leftSleeve, bone, stack, sleeveBuilder, packedLightIn, OverlayTexture.NO_OVERLAY, 1);
                 }
             } else {
+                if (!model.rightArm.visible) {
+                    model.rightArm.visible = true;
+                }
+                if (!model.rightSleeve.visible && mc.options.isModelPartEnabled(PlayerModelPart.RIGHT_SLEEVE)) {
+                    model.rightSleeve.visible = true;
+                }
+
                 stack.translate(CustomGunRenderer.SCALE_RECIPROCAL, 2.0f * CustomGunRenderer.SCALE_RECIPROCAL, 0.0f);
                 if (useOldHandRender) {
                     AnimationHelper.renderPartOverBone(model.rightArm, bone, stack, armBuilder, packedLightIn, OverlayTexture.NO_OVERLAY, 1);

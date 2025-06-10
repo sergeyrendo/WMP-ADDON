@@ -5,7 +5,6 @@ import com.atsuishio.superbwarfare.client.AnimationHelper;
 import com.atsuishio.superbwarfare.client.overlay.CrossHairOverlay;
 import com.atsuishio.superbwarfare.data.gun.GunData;
 import com.atsuishio.superbwarfare.event.ClientEventHandler;
-import com.atsuishio.superbwarfare.item.gun.GunItem;
 import com.atsuishio.superbwarfare.item.gun.handgun.M1911Item;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -14,9 +13,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.model.GeoModel;
 
-public class M1911ItemModel extends GeoModel<M1911Item> {
+public class M1911ItemModel extends CustomGunModel<M1911Item> {
 
     public static float fireRotY = 0f;
     public static float fireRotZ = 0f;
@@ -37,16 +35,25 @@ public class M1911ItemModel extends GeoModel<M1911Item> {
     }
 
     @Override
-    public void setCustomAnimations(M1911Item animatable, long instanceId, AnimationState animationState) {
-        CoreGeoBone gun = getAnimationProcessor().getBone("bone");
-        CoreGeoBone slide = getAnimationProcessor().getBone("huatao");
-        CoreGeoBone bullet = getAnimationProcessor().getBone("bullet");
-        CoreGeoBone hammer = getAnimationProcessor().getBone("hammer");
+    public ResourceLocation getLODModelResource(M1911Item animatable) {
+        return Mod.loc("geo/lod/m_1911.geo.json");
+    }
 
+    @Override
+    public ResourceLocation getLODTextureResource(M1911Item animatable) {
+        return Mod.loc("textures/item/lod/m_1911.png");
+    }
+
+    @Override
+    public void setCustomAnimations(M1911Item animatable, long instanceId, AnimationState<M1911Item> animationState) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack stack = player.getMainHandItem();
-        if (!(stack.getItem() instanceof GunItem)) return;
+        if (shouldCancelRender(stack, animationState)) return;
+
+        CoreGeoBone gun = getAnimationProcessor().getBone("bone");
+        CoreGeoBone bullet = getAnimationProcessor().getBone("bullet");
+        CoreGeoBone hammer = getAnimationProcessor().getBone("hammer");
 
         float times = 0.6f * (float) Math.min(Minecraft.getInstance().getDeltaFrameTime(), 0.8);
         double zt = ClientEventHandler.zoomTime;
@@ -58,7 +65,7 @@ public class M1911ItemModel extends GeoModel<M1911Item> {
 
         gun.setPosX(1.23f * (float) zp);
 
-        gun.setPosY(1.53f * (float) zp - (float) (0.2f * zpz));
+        gun.setPosY(1.3f * (float) zp - (float) (0.2f * zpz));
 
         gun.setPosZ(7f * (float) zp + (float) (0.3f * zpz));
 
@@ -84,9 +91,13 @@ public class M1911ItemModel extends GeoModel<M1911Item> {
         body.setRotZ((float) (body.getRotZ() * (1 - 0.65 * zt)));
 
         CrossHairOverlay.gunRot = body.getRotZ();
-
-        slide.setPosZ(2.75f * (float) fp);
         hammer.setRotX(60 * Mth.DEG_TO_RAD + (120 * Mth.DEG_TO_RAD * (float) fp));
+
+        CoreGeoBone huatao = getAnimationProcessor().getBone("huatao");
+        huatao.setPosZ(2.75f * (float) ClientEventHandler.firePos);
+        if (GunData.from(stack).holdOpen.get()) {
+            huatao.setPosZ(1.5f);
+        }
 
         ClientEventHandler.gunRootMove(getAnimationProcessor());
 
@@ -113,7 +124,6 @@ public class M1911ItemModel extends GeoModel<M1911Item> {
         CoreGeoBone shell = getAnimationProcessor().getBone("shell");
 
         if (GunData.from(stack).holdOpen.get()) {
-            slide.setPosZ(1.5f);
             bullet.setScaleX(0);
             bullet.setScaleY(0);
             bullet.setScaleZ(0);

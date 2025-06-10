@@ -68,13 +68,16 @@ public class AmmoBarOverlay implements IGuiOverlay {
 
         ItemStack stack = player.getMainHandItem();
         if (stack.getItem() instanceof GunItem gunItem && !(player.getVehicle() instanceof ArmedVehicleEntity vehicle && vehicle.banHand(player))) {
+            int x = screenWidth + DisplayConfig.WEAPON_HUD_X_OFFSET.get();
+            int y = screenHeight + DisplayConfig.WEAPON_HUD_Y_OFFSET.get();
+
             PoseStack poseStack = guiGraphics.pose();
             var data = GunData.from(stack);
 
             // 渲染图标
             guiGraphics.blit(gunItem.getGunIcon(),
-                    screenWidth - 135,
-                    screenHeight - 40,
+                    x - 135,
+                    y - 40,
                     0,
                     0,
                     64,
@@ -87,8 +90,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
                 guiGraphics.drawString(
                         Minecraft.getInstance().font,
                         "[" + ModKeyMappings.FIRE_MODE.getKey().getDisplayName().getString() + "]",
-                        screenWidth - 111.5f,
-                        screenHeight - 20,
+                        x - 111.5f,
+                        y - 20,
                         0xFFFFFF,
                         false
                 );
@@ -107,15 +110,15 @@ public class AmmoBarOverlay implements IGuiOverlay {
                 guiGraphics.drawString(
                         Minecraft.getInstance().font,
                         data.rpm() + " RPM",
-                        screenWidth - 111f,
-                        screenHeight - 20,
+                        x - 111f,
+                        y - 20,
                         0xFFFFFF,
                         false
                 );
 
                 guiGraphics.blit(fireMode,
-                        screenWidth - 126,
-                        screenHeight - 22,
+                        x - 126,
+                        y - 22,
                         0,
                         0,
                         12,
@@ -124,8 +127,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
                         12);
             } else {
                 guiGraphics.blit(fireMode,
-                        screenWidth - 95,
-                        screenHeight - 21,
+                        x - 95,
+                        y - 21,
                         0,
                         0,
                         8,
@@ -136,8 +139,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
 
             if (stack.getItem() != ModItems.MINIGUN.get() && stack.getItem() != ModItems.TRACHELIUM.get()) {
                 guiGraphics.blit(LINE,
-                        screenWidth - 95,
-                        screenHeight - 16,
+                        x - 95,
+                        y - 16,
                         0,
                         0,
                         8,
@@ -153,8 +156,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
             guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     getGunAmmoString(data, player),
-                    screenWidth / 1.5f - 64 / 1.5f,
-                    screenHeight / 1.5f - 48 / 1.5f,
+                    x / 1.5f - 64 / 1.5f,
+                    y / 1.5f - 48 / 1.5f,
                     0xFFFFFF,
                     true
             );
@@ -165,8 +168,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
             guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     getBackupAmmoString(data, player),
-                    screenWidth - 64,
-                    screenHeight - 35,
+                    x - 64,
+                    y - 35,
                     0xCCCCCC,
                     true
             );
@@ -179,8 +182,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
             guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     gunName,
-                    screenWidth / 0.9f - (100 + Minecraft.getInstance().font.width(gunName) / 2f) / 0.9f,
-                    screenHeight / 0.9f - 60 / 0.9f,
+                    x / 0.9f - (100 + Minecraft.getInstance().font.width(gunName) / 2f) / 0.9f,
+                    y / 0.9f - 60 / 0.9f,
                     0xFFFFFF,
                     true
             );
@@ -190,8 +193,8 @@ public class AmmoBarOverlay implements IGuiOverlay {
             guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     ammoName,
-                    screenWidth / 0.9f - (100 + Minecraft.getInstance().font.width(ammoName) / 2f) / 0.9f,
-                    screenHeight / 0.9f - 51 / 0.9f,
+                    x / 0.9f - (100 + Minecraft.getInstance().font.width(ammoName) / 2f) / 0.9f,
+                    y / 0.9f - 51 / 0.9f,
                     0xC8A679,
                     true
             );

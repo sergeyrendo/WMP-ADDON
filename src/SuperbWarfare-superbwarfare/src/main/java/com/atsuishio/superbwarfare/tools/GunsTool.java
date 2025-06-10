@@ -48,6 +48,7 @@ public class GunsTool {
                     var path = entry.getKey().getPath();
                     id = Mod.MODID + ":" + path.substring(GUN_DATA_FOLDER.length() + 1, path.length() - GUN_DATA_FOLDER.length() - 1);
                     Mod.LOGGER.warn("Gun ID for {} is empty, try using {} as id", path, id);
+                    data.id = id;
                 }
 
                 if (!gunsData.containsKey(id)) {
@@ -63,7 +64,7 @@ public class GunsTool {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             var server = player.getServer();
-            if (server != null && server.isSingleplayer()) {
+            if (server != null && server.isSingleplayerOwner(player.getGameProfile())) {
                 return;
             }
 
@@ -78,13 +79,18 @@ public class GunsTool {
 
     @SubscribeEvent
     public static void onDataPackSync(OnDatapackSyncEvent event) {
-        initJsonData(event.getPlayerList().getServer().getResourceManager());
+        var players = event.getPlayerList();
+        var server = players.getServer();
+        initJsonData(server.getResourceManager());
 
-        if (event.getPlayerList().getServer().isSingleplayer()) {
-            return;
+        var message = GunsDataMessage.create();
+        for (var player : players.getPlayers()) {
+            if (server.isSingleplayerOwner(player.getGameProfile())) {
+                continue;
+            }
+
+            Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), message);
         }
-
-        event.getPlayerList().getPlayers().forEach(player -> Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), GunsDataMessage.create()));
     }
 
     public static void setGunIntTag(ItemStack stack, String name, int num) {

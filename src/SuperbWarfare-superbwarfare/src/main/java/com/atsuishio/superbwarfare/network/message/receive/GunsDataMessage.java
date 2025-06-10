@@ -1,53 +1,49 @@
 package com.atsuishio.superbwarfare.network.message.receive;
 
-import com.atsuishio.superbwarfare.network.ClientPacketHandler;
+import com.atsuishio.superbwarfare.data.gun.DefaultGunData;
+import com.atsuishio.superbwarfare.tools.BufferSerializer;
 import com.atsuishio.superbwarfare.tools.GunsTool;
-import com.google.gson.Gson;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GunsDataMessage {
 
-    public final Map<String, String> gunsData;
+    public final List<DefaultGunData> data;
 
-    private GunsDataMessage(Map<String, String> gunsData) {
-        this.gunsData = gunsData;
+    private GunsDataMessage(List<DefaultGunData> data) {
+        this.data = data;
     }
-
-    private static final Gson GSON = new Gson();
 
     public static GunsDataMessage create() {
-        var map = new HashMap<String, String>();
-        for (var entry : GunsTool.gunsData.entrySet()) {
-            map.put(entry.getKey(), GSON.toJson(entry.getValue()));
-        }
-        return new GunsDataMessage(map);
+        return new GunsDataMessage(GunsTool.gunsData.values().stream().toList());
     }
 
-    public static void encode(GunsDataMessage message, FriendlyByteBuf buffer) {
-        for (var entry : message.gunsData.entrySet()) {
-            buffer.writeUtf(entry.getKey());
-            buffer.writeUtf(entry.getValue());
+    public static void encode(GunsDataMessage message, FriendlyByteBuf buf) {
+        var obj = message.data;
+
+        buf.writeVarInt(obj.size());
+        for (var data : obj) {
+            buf.writeBytes(BufferSerializer.serialize(data).copy());
         }
     }
 
     public static GunsDataMessage decode(FriendlyByteBuf buffer) {
-        var map = new HashMap<String, String>();
-        while (buffer.isReadable()) {
-            map.put(buffer.readUtf(), buffer.readUtf());
+        var size = buffer.readVarInt();
+        var list = new ArrayList<DefaultGunData>();
+        for (var i = 0; i < size; i++) {
+            list.add(BufferSerializer.deserialize(buffer, new DefaultGunData()));
         }
-
-        return new GunsDataMessage(map);
+        return new GunsDataMessage(list);
     }
 
-    public static void handler(GunsDataMessage message, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleGunsDataMessage(message, ctx)));
-        ctx.get().setPacketHandled(true);
+    public static void handler(GunsDataMessage message) {
+        GunsTool.gunsData.clear();
+
+        for (var entry : message.data) {
+            if (GunsTool.gunsData.containsKey(entry.id)) continue;
+            GunsTool.gunsData.put(entry.id, entry);
+        }
     }
 }

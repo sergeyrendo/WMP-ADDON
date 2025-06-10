@@ -19,42 +19,42 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class AK47Item extends GunItem implements GeoItem {
-
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-
-    @Override
-    public Set<SoundEvent> getReloadSound() {
-        return Set.of(ModSounds.AK_47_RELOAD_EMPTY.get(), ModSounds.AK_47_RELOAD_NORMAL.get());
-    }
+public class AK47Item extends GunItem {
 
     public AK47Item() {
         super(new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
     }
 
     @Override
+    public Set<SoundEvent> getReloadSound() {
+        return Set.of(ModSounds.AK_47_RELOAD_EMPTY.get(), ModSounds.AK_47_RELOAD_NORMAL.get());
+    }
+
+    @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         super.initializeClient(consumer);
         consumer.accept(new IClientItemExtensions() {
-            private final BlockEntityWithoutLevelRenderer renderer = new AK47ItemRenderer();
+            private BlockEntityWithoutLevelRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new AK47ItemRenderer();
+                }
                 return renderer;
             }
 
@@ -70,6 +70,8 @@ public class AK47Item extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ak_47.idle"));
 
         boolean drum = GunData.from(stack).attachment.get(AttachmentType.MAGAZINE) == 2;
         boolean grip = GunData.from(stack).attachment.get(AttachmentType.GRIP) == 1 || GunData.from(stack).attachment.get(AttachmentType.GRIP) == 2;
@@ -130,6 +132,8 @@ public class AK47Item extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.ak_47.idle"));
 
         if (ClickHandler.isEditing) {
             return event.setAndContinue(RawAnimation.begin().thenPlay("animation.ak_47.edit"));
@@ -144,11 +148,6 @@ public class AK47Item extends GunItem implements GeoItem {
         data.add(idleController);
         var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
     }
 
     @Override

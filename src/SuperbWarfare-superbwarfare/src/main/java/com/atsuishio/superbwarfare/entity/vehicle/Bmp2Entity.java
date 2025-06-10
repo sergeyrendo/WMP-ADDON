@@ -13,6 +13,7 @@ import com.atsuishio.superbwarfare.entity.vehicle.weapon.ProjectileWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.SmallCannonShellWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.VehicleWeapon;
 import com.atsuishio.superbwarfare.entity.vehicle.weapon.WgMissileWeapon;
+import com.atsuishio.superbwarfare.event.ClientMouseHandler;
 import com.atsuishio.superbwarfare.init.ModDamageTypes;
 import com.atsuishio.superbwarfare.init.ModEntities;
 import com.atsuishio.superbwarfare.init.ModItems;
@@ -126,7 +127,7 @@ public class Bmp2Entity extends ContainerMobileVehicleEntity implements GeoEntit
 
     @Override
     public ThirdPersonCameraPosition getThirdPersonCameraPosition(int index) {
-        return new ThirdPersonCameraPosition(3, 1, 0);
+        return new ThirdPersonCameraPosition(3 + ClientMouseHandler.custom3pDistanceLerp, 1, 0);
     }
 
     @Override
@@ -324,7 +325,7 @@ public class Bmp2Entity extends ContainerMobileVehicleEntity implements GeoEntit
             var smallCannonShell = ((SmallCannonShellWeapon) getWeapon(0)).create(player);
 
             smallCannonShell.setPos(worldPosition.x - 1.1 * this.getDeltaMovement().x, worldPosition.y, worldPosition.z - 1.1 * this.getDeltaMovement().z);
-            smallCannonShell.shoot(getBarrelVector(1).x, getBarrelVector(1).y + 0.005f, getBarrelVector(1).z, 20,
+            smallCannonShell.shoot(getBarrelVector(1).x, getBarrelVector(1).y + 0.005f, getBarrelVector(1).z, 35,
                     0.25f);
             this.level().addFreshEntity(smallCannonShell);
 
@@ -753,6 +754,11 @@ public class Bmp2Entity extends ContainerMobileVehicleEntity implements GeoEntit
         return zoom ? 0.22 : 0.27;
     }
 
+    @Override
+    public boolean isEnclosed(int index) {
+        return true;
+    }
+
     @OnlyIn(Dist.CLIENT)
     @Override
     public @Nullable Vec2 getCameraRotation(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
@@ -783,5 +789,10 @@ public class Bmp2Entity extends ContainerMobileVehicleEntity implements GeoEntit
             }
         }
         return super.getCameraPosition(partialTicks, player, false, false);
+    }
+
+    @Override
+    public @Nullable ResourceLocation getVehicleItemIcon() {
+        return Mod.loc("textures/gui/vehicle/type/land.png");
     }
 }

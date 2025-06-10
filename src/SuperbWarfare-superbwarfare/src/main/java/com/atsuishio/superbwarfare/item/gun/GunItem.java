@@ -21,6 +21,7 @@ import com.google.common.collect.Multimap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -45,6 +46,10 @@ import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
@@ -52,11 +57,19 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 @net.minecraftforge.fml.common.Mod.EventBusSubscriber
-public abstract class GunItem extends Item {
+public abstract class GunItem extends Item implements GeoItem {
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public GunItem(Properties properties) {
         super(properties);
         addReloadTimeBehavior(this.reloadTimeBehaviors);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override
@@ -79,6 +92,11 @@ public abstract class GunItem extends Item {
     }
 
     @Override
+    public boolean isPerspectiveAware() {
+        return true;
+    }
+
+    @Override
     @ParametersAreNonnullByDefault
     public boolean canAttackBlock(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer) {
         return false;
@@ -88,6 +106,10 @@ public abstract class GunItem extends Item {
     @ParametersAreNonnullByDefault
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
         if (!(entity instanceof LivingEntity living) || !(stack.getItem() instanceof GunItem gunItem)) return;
+
+        if (level instanceof ServerLevel serverLevel) {
+            GeoItem.getOrAssignId(stack, serverLevel);
+        }
 
         var data = GunData.from(stack);
 

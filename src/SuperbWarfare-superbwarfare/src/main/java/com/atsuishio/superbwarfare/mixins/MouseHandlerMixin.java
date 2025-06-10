@@ -20,7 +20,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-import static com.atsuishio.superbwarfare.event.ClientEventHandler.droneFovLerp;
 import static com.atsuishio.superbwarfare.event.ClientEventHandler.isFreeCam;
 
 /**
@@ -56,7 +55,7 @@ public class MouseHandlerMixin {
         }
 
         if (stack.is(ModItems.MONITOR.get()) && stack.getOrCreateTag().getBoolean("Using") && stack.getOrCreateTag().getBoolean("Linked")) {
-            return 0.33 / (1 + 0.08 * (droneFovLerp - 1));
+            return 0;
         }
 
         if (isFreeCam(player)) {

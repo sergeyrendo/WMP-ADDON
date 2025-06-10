@@ -266,6 +266,11 @@ public class GunData {
         return defaultGunData().prepareLoadTime;
     }
 
+    public int prepareAmmoLoadTime() {
+        return defaultGunData().prepareAmmoLoadTime;
+    }
+
+
     public int defaultPrepareEmptyTime() {
         return defaultGunData().prepareEmptyTime;
     }

@@ -11,7 +11,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class TACZGunEventHandler {
+
+    private static final List<String> VERSIONS = List.of("1.1.4", "1.1.5", "1.1.6");
 
     public static void entityHurtByTACZGun(EntityHurtByGunEvent.Pre event) {
         if (event.getHurtEntity() instanceof VehicleEntity) {
@@ -23,9 +28,17 @@ public class TACZGunEventHandler {
         return ModList.get().isLoaded("tacz");
     }
 
-    public static boolean displayCompat() {
-        return hasMod() && ModList.get().getModFileById("tacz") != null &&
-                (ModList.get().getModFileById("tacz").versionString().startsWith("1.1.4") || ModList.get().getModFileById("tacz").versionString().startsWith("1.1.5"));
+    public static boolean compatCondition() {
+        if (hasMod() && ModList.get().getModFileById("tacz") != null) {
+            AtomicBoolean flag = new AtomicBoolean(false);
+            VERSIONS.forEach(version -> {
+                if (ModList.get().getModFileById("tacz").versionString().startsWith(version)) {
+                    flag.set(true);
+                }
+            });
+            return flag.get();
+        }
+        return false;
     }
 
     public static ResourceLocation getTaczCompatIcon(ItemStack stack) {

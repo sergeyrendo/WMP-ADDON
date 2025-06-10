@@ -32,6 +32,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -40,14 +41,12 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
@@ -56,11 +55,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class SecondaryCataclysm extends GunItem implements GeoItem {
+public class SecondaryCataclysm extends GunItem {
 
     private final Supplier<Integer> energyCapacity = () -> 24000;
-
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public SecondaryCataclysm() {
         super(new Properties().stacksTo(1).fireResistant().rarity(RarityTool.LEGENDARY));
@@ -114,10 +111,13 @@ public class SecondaryCataclysm extends GunItem implements GeoItem {
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer) {
         super.initializeClient(consumer);
         consumer.accept(new IClientItemExtensions() {
-            private final BlockEntityWithoutLevelRenderer renderer = new SecondaryCataclysmRenderer();
+            private BlockEntityWithoutLevelRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new SecondaryCataclysmRenderer();
+                }
                 return renderer;
             }
 
@@ -133,6 +133,9 @@ public class SecondaryCataclysm extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+
         var data = GunData.from(stack);
 
         if (data.reload.stage() == 1 && data.reload.prepareLoadTimer.get() > 0) {
@@ -159,6 +162,9 @@ public class SecondaryCataclysm extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+
         var data = GunData.from(stack);
 
         if (player.isSprinting() && player.onGround()
@@ -181,16 +187,14 @@ public class SecondaryCataclysm extends GunItem implements GeoItem {
     }
 
     private PlayState meleePredicate(AnimationState<SecondaryCataclysm> event) {
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
+
         if (ClientEventHandler.gunMelee > 0) {
             return event.setAndContinue(RawAnimation.begin().thenPlay("animation.secondary_cataclysm.hit"));
         }
 
         return event.setAndContinue(RawAnimation.begin().thenLoop("animation.secondary_cataclysm.idle"));
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
     }
 
     @Override

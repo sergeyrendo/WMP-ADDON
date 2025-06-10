@@ -21,26 +21,23 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class M98bItem extends GunItem implements GeoItem {
-
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+public class M98bItem extends GunItem {
 
     public M98bItem() {
         super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
@@ -50,10 +47,13 @@ public class M98bItem extends GunItem implements GeoItem {
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         super.initializeClient(consumer);
         consumer.accept(new IClientItemExtensions() {
-            private final BlockEntityWithoutLevelRenderer renderer = new M98bItemRenderer();
+            private BlockEntityWithoutLevelRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new M98bItemRenderer();
+                }
                 return renderer;
             }
 
@@ -69,6 +69,8 @@ public class M98bItem extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.m_98b.idle"));
 
         if (GunData.from(stack).bolt.actionTimer.get() > 0) {
             return event.setAndContinue(RawAnimation.begin().thenPlay("animation.m_98b.shift"));
@@ -90,6 +92,8 @@ public class M98bItem extends GunItem implements GeoItem {
         if (player == null) return PlayState.STOP;
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof GunItem)) return PlayState.STOP;
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.m_98b.idle"));
 
         if (player.isSprinting() && player.onGround()
                 && ClientEventHandler.cantSprint == 0
@@ -105,6 +109,9 @@ public class M98bItem extends GunItem implements GeoItem {
     }
 
     private PlayState editPredicate(AnimationState<M98bItem> event) {
+        if (event.getData(DataTickets.ITEM_RENDER_PERSPECTIVE) != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND)
+            return event.setAndContinue(RawAnimation.begin().thenLoop("animation.m_98b.idle"));
+
         if (ClickHandler.isEditing) {
             return event.setAndContinue(RawAnimation.begin().thenPlay("animation.m_98b.edit"));
         }
@@ -119,11 +126,6 @@ public class M98bItem extends GunItem implements GeoItem {
         data.add(idleController);
         var editController = new AnimationController<>(this, "editController", 1, this::editPredicate);
         data.add(editController);
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
     }
 
     @Override

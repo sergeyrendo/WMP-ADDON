@@ -38,6 +38,7 @@ public class VehicleDataTool {
                     var path = entry.getKey().getPath();
                     id = Mod.MODID + ":" + path.substring(VEHICLE_DATA_FOLDER.length() + 1, path.length() - VEHICLE_DATA_FOLDER.length() - 1);
                     Mod.LOGGER.warn("Vehicle ID for {} is empty, try using {} as id", id, path);
+                    data.id = id;
                 }
 
                 if (!vehicleData.containsKey(id)) {
@@ -53,7 +54,7 @@ public class VehicleDataTool {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             var server = player.getServer();
-            if (server != null && server.isSingleplayer()) {
+            if (server != null && server.isSingleplayerOwner(player.getGameProfile())) {
                 return;
             }
 
@@ -68,12 +69,17 @@ public class VehicleDataTool {
 
     @SubscribeEvent
     public static void onDataPackSync(OnDatapackSyncEvent event) {
-        initJsonData(event.getPlayerList().getServer().getResourceManager());
+        var players = event.getPlayerList();
+        var server = players.getServer();
+        initJsonData(server.getResourceManager());
 
-        if (event.getPlayerList().getServer().isSingleplayer()) {
-            return;
+        var message = VehiclesDataMessage.create();
+        for (var player : players.getPlayers()) {
+            if (server.isSingleplayerOwner(player.getGameProfile())) {
+                continue;
+            }
+
+            Mod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), message);
         }
-
-        Mod.PACKET_HANDLER.send(PacketDistributor.ALL.noArg(), VehiclesDataMessage.create());
     }
 }
