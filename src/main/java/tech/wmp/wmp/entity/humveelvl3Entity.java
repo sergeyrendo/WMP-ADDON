@@ -171,13 +171,15 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
-        // Добавьте здесь любые дополнительные данные для сохранения, если они есть
+        compound.putInt("LoadedMissile", this.entityData.get(LOADED_MISSILE));
+        compound.putInt("ReloadCoolDown", this.reloadCoolDown);
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag compound) {
         super.readAdditionalSaveData(compound);
-        // Восстановите здесь любые дополнительные данные, если они есть
+        this.entityData.set(LOADED_MISSILE, compound.getInt("LoadedMissile"));
+        this.reloadCoolDown = compound.getInt("ReloadCoolDown");
     }
 
     @Override
@@ -237,6 +239,14 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
 
         super.baseTick();
 
+
+        if (this.level() instanceof ServerLevel) {
+            if (reloadCoolDown > 0) {
+                reloadCoolDown--;
+            }
+            this.handleAmmo();
+        }
+
         // Логика обновления поворота турели
         Entity gunner = getNthEntity(1); // Получаем сущность на втором месте
         if (gunner instanceof Player) {
@@ -254,21 +264,32 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         lowHealthWarning();
         this.terrainCompact(2.7f, 3.61f);
         inertiaRotate(1.25f);
-
-        if (this.level() instanceof ServerLevel) {
-            if (reloadCoolDown > 0) {
-                reloadCoolDown--;
-            }
-            this.handleAmmo();
-        }
-
+        
         this.refreshDimensions();
     }
 
     @Override
     public boolean canCollideHardBlock() {
-        return getDeltaMovement().horizontalDistance() > 0.09 || Mth.abs(this.entityData.get(POWER)) > 0.15;
+        return true;
     }
+
+    // private void handleAmmo() {
+    //     if (!(this.getFirstPassenger() instanceof Player player)) return;
+
+    //     if ((hasItem(ModItems.WIRE_GUIDE_MISSILE.get())
+    //             || InventoryTool.hasCreativeAmmoBox(player))
+    //             && this.reloadCoolDown <= 0 && this.getEntityData().get(LOADED_MISSILE) < 1) {
+    //         this.entityData.set(LOADED_MISSILE, this.getEntityData().get(LOADED_MISSILE) + 1);
+    //         this.reloadCoolDown = 160;
+    //         if (!InventoryTool.hasCreativeAmmoBox(player)) {
+    //             this.getItemStacks().stream().filter(stack -> stack.is(ModItems.WIRE_GUIDE_MISSILE.get())).findFirst().ifPresent(stack -> stack.shrink(1));
+    //         }
+    //         this.level().playSound(null, this, com.atsuishio.superbwarfare.init.ModSounds.BMP_MISSILE_RELOAD.get(), this.getSoundSource(), 1, 1);
+    //     }
+
+    //     this.entityData.set(HEAVY_AMMO, this.entityData.get(LOADED_MISSILE));
+    //     this.entityData.set(MISSILE_COUNT, countItem(ModItems.WIRE_GUIDE_MISSILE.get()));
+    // }
 
     @Override
     public void travel() {
@@ -425,6 +446,13 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         super.destroy();
     }
 
+// Добавь этот метод для получения вектора турели
+    public Vec3 getTurretVector(float pPartialTicks) {
+        Matrix4f transform = getTurretTransform(pPartialTicks);
+        Vector4f rootPosition = transformPosition(transform, 0, 0, 0);
+        Vector4f targetPosition = transformPosition(transform, 0, 0, 1);
+        return new Vec3(rootPosition.x, rootPosition.y, rootPosition.z).vectorTo(new Vec3(targetPosition.x, targetPosition.y, targetPosition.z));
+    }
 
     public Matrix4f getTurretTransform(float ticks) {
         Matrix4f transformV = getVehicleTransform(ticks);
@@ -499,10 +527,10 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     
     // Реализация методов ArmedVehicleEntity - заглушки, так как оружия у нас больше нет
     
-    @Override
-    public int mainGunRpm(Player player) {
-        return 470; // Нет оружия
-    }
+    // @Override
+    // public int mainGunRpm(Player player) {
+    //     return 470; // Нет оружия
+    // }
 
     @Override
     public boolean canShoot(Player player) {
@@ -518,49 +546,61 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     }
 
     @Override
+    public int mainGunRpm(Player player) {
+        return 30; // Очень низкий RPM для ракет
+    }
+    
+    private void handleAmmo() {
+        if (!(this.getFirstPassenger() instanceof Player player)) return;
+    
+        if ((hasItem(ModItems.WIRE_GUIDE_MISSILE.get())
+                || InventoryTool.hasCreativeAmmoBox(player))
+                && this.reloadCoolDown <= 0 && this.getEntityData().get(LOADED_MISSILE) < 1) {
+            this.entityData.set(LOADED_MISSILE, this.getEntityData().get(LOADED_MISSILE) + 1);
+            this.reloadCoolDown = 160;
+            if (!InventoryTool.hasCreativeAmmoBox(player)) {
+                this.getItemStacks().stream().filter(stack -> stack.is(ModItems.WIRE_GUIDE_MISSILE.get())).findFirst().ifPresent(stack -> stack.shrink(1));
+            }
+            this.level().playSound(null, this, com.atsuishio.superbwarfare.init.ModSounds.BMP_MISSILE_RELOAD.get(), this.getSoundSource(), 1, 1);
+        }
+    
+        this.entityData.set(AMMO, this.entityData.get(LOADED_MISSILE)); // Изменено с HEAVY_AMMO на AMMO
+        this.entityData.set(MISSILE_COUNT, countItem(ModItems.WIRE_GUIDE_MISSILE.get()));
+    }
+    
+    @Override
     public void vehicleShoot(Player player, int type) {
         boolean hasCreativeAmmo = false;
-        for (int i = 0; i < getMaxPassengers() - 1; i++) {
+        for (int i = 0; i < getMaxPassengers(); i++) {
             if (getNthEntity(i) instanceof Player pPlayer && InventoryTool.hasCreativeAmmoBox(pPlayer)) {
                 hasCreativeAmmo = true;
             }
         }
+    
         if (type == 1 && this.getEntityData().get(LOADED_MISSILE) > 0) {
-            Matrix4f transformT = getBarrelTransform(1);
-            Vector4f worldPosition = transformPosition(transformT, -0.8f, -0.20f, 0.5f);
-
-            var wgMissileEntity = ((WgMissileWeapon) getWeapon(0)).create(player);
-
+            Matrix4f transformT = getTurretTransform(1); // Используем турель
+            Vector4f worldPosition = transformPosition(transformT, 0, 0.5f, 1f); // Позиция запуска
+    
+            var wgMissileEntity = ((WgMissileWeapon) getWeapon(1)).create(player);
+    
             wgMissileEntity.setPos(worldPosition.x, worldPosition.y, worldPosition.z);
-            wgMissileEntity.shoot(getBarrelVector(1).x, getBarrelVector(1).y, getBarrelVector(1).z, 2f, 0f);
+            
+            // Получаем вектор направления турели
+            Vec3 turretVector = getTurretVector(1);
+            wgMissileEntity.shoot(turretVector.x, turretVector.y, turretVector.z, 2f, 0f);
+            
             player.level().addFreshEntity(wgMissileEntity);
-
+    
             if (!player.level().isClientSide) {
-                playShootSound3p(player, 0, 6, 0, 0);
+                playShootSound3p(player, 1, 6, 0, 0);
             }
-
+    
             this.entityData.set(LOADED_MISSILE, this.getEntityData().get(LOADED_MISSILE) - 1);
-            reloadCoolDown = 160;
+            reloadCoolDown = 20;
         }
     }
     
-
-private void handleAmmo() {
-    if (!(this.getFirstPassenger() instanceof Player player)) return;
-
-    if ((hasItem(ModItems.WIRE_GUIDE_MISSILE.get())
-            || InventoryTool.hasCreativeAmmoBox(player))
-            && this.reloadCoolDown <= 0 && this.getEntityData().get(LOADED_MISSILE) < 1) {
-        this.entityData.set(LOADED_MISSILE, this.getEntityData().get(LOADED_MISSILE) + 1);
-        this.reloadCoolDown = 160;
-        if (!InventoryTool.hasCreativeAmmoBox(player)) {
-            this.getItemStacks().stream().filter(stack -> stack.is(ModItems.WIRE_GUIDE_MISSILE.get())).findFirst().ifPresent(stack -> stack.shrink(1));
-        }
-        this.level().playSound(null, this, ModSounds.M2_1P.get(), this.getSoundSource(), 1, 1);
-    }
-
-    this.entityData.set(AMMO, this.getEntityData().get(LOADED_MISSILE));
-}
+    
 
     
     @Override

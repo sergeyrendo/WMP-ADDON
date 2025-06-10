@@ -279,7 +279,7 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
                 }
             }
 
-            // this.handleAmmo();
+            this.handleAmmo();
 
         }
 
@@ -676,6 +676,35 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
     //         this.entityData.set(MG_AMMO, countItem(getWeapon(1).ammo));
     //     }
     // }
+
+    private void handleAmmo() {
+        boolean hasCreativeAmmo = false;
+        for (int i = 0; i < getMaxPassengers(); i++) {
+            if (getNthEntity(i) instanceof Player pPlayer && InventoryTool.hasCreativeAmmoBox(pPlayer)) {
+                hasCreativeAmmo = true;
+            }
+        }
+    
+        if (hasCreativeAmmo) {
+            this.entityData.set(MG_AMMO, 9999);
+        } else {
+            // Считаем патроны из ammo box или отдельных патронов
+            int totalAmmo = 0;
+            
+            // Проверяем ammo box
+            for (ItemStack stack : this.getItemStacks()) {
+                if (stack.is(ModItems.AMMO_BOX.get())) {
+                    totalAmmo += Ammo.HEAVY.get(stack);
+                }
+            }
+            
+            // Проверяем отдельные патроны
+            totalAmmo += countItem(ModItems.HEAVY_AMMO.get());
+            
+            this.entityData.set(MG_AMMO, totalAmmo);
+        }
+    }
+    
     
     @Override
     public int zoomFov() {
