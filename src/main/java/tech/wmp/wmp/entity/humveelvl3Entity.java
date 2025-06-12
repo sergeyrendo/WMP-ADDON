@@ -420,8 +420,8 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     }
 
     public void copyEntityData(Entity entity) {
-        if (entity == getNthEntity(0)) {
-            entity.setYBodyRot(getBarrelYRot(1));
+        if (entity == getNthEntity(1)) { // Изменено с 0 на 1 для стрелка
+            entity.setYBodyRot(getTurretYRot());
         }
     }
 
@@ -446,24 +446,16 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         super.destroy();
     }
 
-// Добавь этот метод для получения вектора турели
-    public Vec3 getTurretVector(float pPartialTicks) {
-        Matrix4f transform = getTurretTransform(pPartialTicks);
-        Vector4f rootPosition = transformPosition(transform, 0, 0, 0);
-        Vector4f targetPosition = transformPosition(transform, 0, 0, 1);
-        return new Vec3(rootPosition.x, rootPosition.y, rootPosition.z).vectorTo(new Vec3(targetPosition.x, targetPosition.y, targetPosition.z));
-    }
-
     public Matrix4f getTurretTransform(float ticks) {
         Matrix4f transformV = getVehicleTransform(ticks);
 
         Matrix4f transform = new Matrix4f();
-        Vector4f worldPosition = transformPosition(transform, 0, 2.5f, 0); // Примерные координаты турели
+        Vector4f worldPosition = transformPosition(transform, 0, 2.4003f, 0); // Примерные координаты турели
 
         transformV.translate(worldPosition.x, worldPosition.y, worldPosition.z);
         transformV.rotate(Axis.YP.rotationDegrees(Mth.lerp(ticks, turretYRotO, getTurretYRot())));
         return transformV;
-    }
+    }    
 
     public Matrix4f getBarrelTransform(float ticks) {
         Matrix4f transformT = getTurretTransform(ticks);
@@ -551,7 +543,9 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     }
     
     private void handleAmmo() {
-        if (!(this.getFirstPassenger() instanceof Player player)) return;
+        Entity gunner = getNthEntity(1);
+        if (!(gunner instanceof Player player)) return;
+        
     
         if ((hasItem(ModItems.WIRE_GUIDE_MISSILE.get())
                 || InventoryTool.hasCreativeAmmoBox(player))
@@ -561,7 +555,7 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
             if (!InventoryTool.hasCreativeAmmoBox(player)) {
                 this.getItemStacks().stream().filter(stack -> stack.is(ModItems.WIRE_GUIDE_MISSILE.get())).findFirst().ifPresent(stack -> stack.shrink(1));
             }
-            this.level().playSound(null, this, com.atsuishio.superbwarfare.init.ModSounds.BMP_MISSILE_RELOAD.get(), this.getSoundSource(), 1, 1);
+            this.level().playSound(null, this, ModSounds.TOW_RELOAD.get(), this.getSoundSource(), 1, 1);
         }
     
         this.entityData.set(AMMO, this.entityData.get(LOADED_MISSILE)); // Изменено с HEAVY_AMMO на AMMO
@@ -578,7 +572,7 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         }
     
         if (type == 1 && this.getEntityData().get(LOADED_MISSILE) > 0) {
-            Matrix4f transformT = getTurretTransform(1); // Используем турель
+            Matrix4f transformT = getBarrelTransform(1); // Используем турель
             Vector4f worldPosition = transformPosition(transformT, 0, 0.5f, 1f); // Позиция запуска
     
             var wgMissileEntity = ((WgMissileWeapon) getWeapon(1)).create(player);
@@ -586,8 +580,8 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
             wgMissileEntity.setPos(worldPosition.x, worldPosition.y, worldPosition.z);
             
             // Получаем вектор направления турели
-            Vec3 turretVector = getTurretVector(1);
-            wgMissileEntity.shoot(turretVector.x, turretVector.y, turretVector.z, 2f, 0f);
+            Vec3 barrelVector = getBarrelVector(1);
+            wgMissileEntity.shoot(barrelVector.x, barrelVector.y, barrelVector.z, 2f, 0f);
             
             player.level().addFreshEntity(wgMissileEntity);
     
@@ -596,10 +590,10 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
             }
     
             this.entityData.set(LOADED_MISSILE, this.getEntityData().get(LOADED_MISSILE) - 1);
-            reloadCoolDown = 20;
+            reloadCoolDown = 160;
         }
     }
-    
+
     
 
     

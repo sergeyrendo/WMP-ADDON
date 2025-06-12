@@ -89,7 +89,7 @@ public class ModEntities {
                                 .setTrackingRange(64)
                                 .setUpdateInterval(1)
                                 .fireImmune()
-                                .sized(3.8f, 2.7f)
+                                .sized(3.8f, 4.0f)
                                 .build("humveelvl3"));
 
     private static <T extends Entity> RegistryObject<EntityType<T>> register(String name, EntityType.Builder<T> entityTypeBuilder) {

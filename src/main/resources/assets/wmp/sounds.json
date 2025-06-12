@@ -79,7 +79,7 @@
   },
   "tow_reload": {
     "sounds": [
-      "minecraft:block.iron_door.close"
+      "wmp:tow_reload"
     ]
   }
 
