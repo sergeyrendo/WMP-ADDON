@@ -73,6 +73,8 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import com.atsuishio.superbwarfare.entity.vehicle.base.WeaponVehicleEntity;
+
+import tech.wmp.wmp.config.VehicleConfigWMP;
 import tech.wmp.wmp.init.ModSounds;
 
 // Импортируем необходимые классы для атрибутов
@@ -104,7 +106,7 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
             this.entityData.set(CANNON_FIRE_TIME, 0);
             this.entityData.set(LOADED_MISSILE, 0);
             this.entityData.set(MISSILE_COUNT, 0);
-            this.entityData.set(SMOKE_DECOY, 0);
+            this.entityData.set(SMOKE_DECOY, 2);
             this.entityData.set(GUN_FIRE_TIME, 0);
         }
     }
@@ -227,6 +229,8 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
             this.setTurretXRot(Mth.clamp(-pitch, -45f, 45f));
         }
     }
+    
+    
 
 
     @Override
@@ -260,6 +264,8 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         } else {
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.99, 0.95, 0.99));
         }
+
+        releaseSmokeDecoy(getTurretVector(1));
 
         lowHealthWarning();
         this.terrainCompact(2.7f, 3.61f);
@@ -320,7 +326,7 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         }
 
         if (this.forwardInputDown || this.backInputDown) {
-            this.consumeEnergy(VehicleConfig.LAV_150_ENERGY_COST.get());
+            this.consumeEnergy(VehicleConfigWMP.HUMVEE_ENERGY_COST.get());
         }
 
         this.entityData.set(POWER, this.entityData.get(POWER) * (upInputDown ? 0.5f : (rightInputDown || leftInputDown) ? 0.977f : 0.99f));
@@ -395,28 +401,38 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
 
     @Override
     public void positionRider(@NotNull Entity passenger, @NotNull MoveFunction callback) {
-        // From Immersive_Aircraft
         if (!this.hasPassenger(passenger)) {
             return;
         }
 
         Matrix4f transform = getVehicleTransform(1);
 
-        int i = this.getOrderedPassengers().indexOf(passenger);
+        int i = this.getSeatIndex(passenger);
+        Vector4f worldPosition;
 
-        var worldPosition = switch (i) {
-            case 0 -> transformPosition(transform, 0.8f, 0.28f, 0.2f);
-            case 1 -> transformPosition(transform, 0.0f, 1.5f, 0.0f);
-            case 2 -> transformPosition(transform, 0.8f, 0.28f, -0.8f);
-            case 3 -> transformPosition(transform, -0.8f, 0.28f, -0.8f);
-            case 4 -> transformPosition(transform, -0.8f, 0.28f, 0.2f);
-            default -> throw new IllegalStateException("Unexpected value: " + i);
-        };
+        switch(i) {
+            case 0: // Водитель (слева спереди)
+                worldPosition = transformPosition(transform, 0.8f, 0.28f, 0.2f); 
+                break;
+            case 1: // Пассажир рядом с водителем
+            worldPosition = transformPosition(transform, 0.0f, 1.5f, -0.3f); 
+                break;
+            case 2: // Пассажир сзади слева
+            worldPosition = transformPosition(transform, 0.8f, 0.28f, -0.8f); 
+                break;
+            case 3: // Пассажир сзади справа
+            worldPosition = transformPosition(transform, -0.8f, 0.28f, -0.8f); 
+                break;
+            case 4: // Пассажир рядом с водителем
+            worldPosition = transformPosition(transform, -0.8f, 0.28f, 0.2f); 
+                break;
+            default:
+                worldPosition = transformPosition(transform, 0, 1, 0);
+                break;
+        }
 
         passenger.setPos(worldPosition.x, worldPosition.y, worldPosition.z);
         callback.accept(passenger, worldPosition.x, worldPosition.y, worldPosition.z);
-
-        copyEntityData(passenger);
     }
 
     public void copyEntityData(Entity entity) {
@@ -450,12 +466,20 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
         Matrix4f transformV = getVehicleTransform(ticks);
 
         Matrix4f transform = new Matrix4f();
-        Vector4f worldPosition = transformPosition(transform, 0, 2.4003f, 0); // Примерные координаты турели
+        Vector4f worldPosition = transformPosition(transform, 0, 2.5f, 0); // Примерные координаты турели
 
         transformV.translate(worldPosition.x, worldPosition.y, worldPosition.z);
         transformV.rotate(Axis.YP.rotationDegrees(Mth.lerp(ticks, turretYRotO, getTurretYRot())));
         return transformV;
-    }    
+    }
+
+    public Vec3 getTurretVector(float pPartialTicks) {
+        Matrix4f transform = getTurretTransform(pPartialTicks);
+        Vector4f rootPosition = transformPosition(transform, 0, 0, 0);
+        Vector4f targetPosition = transformPosition(transform, 0, 0, 1);
+        return new Vec3(rootPosition.x, rootPosition.y, rootPosition.z)
+            .vectorTo(new Vec3(targetPosition.x, targetPosition.y, targetPosition.z));
+    }
 
     public Matrix4f getBarrelTransform(float ticks) {
         Matrix4f transformT = getTurretTransform(ticks);
@@ -573,7 +597,7 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     
         if (type == 1 && this.getEntityData().get(LOADED_MISSILE) > 0) {
             Matrix4f transformT = getBarrelTransform(1); // Используем турель
-            Vector4f worldPosition = transformPosition(transformT, 0, 0.5f, 1f); // Позиция запуска
+            Vector4f worldPosition = transformPosition(transformT, -0.9f, 0.5f, 1f); // Позиция запуска
     
             var wgMissileEntity = ((WgMissileWeapon) getWeapon(1)).create(player);
     
@@ -636,12 +660,32 @@ public class humveelvl3Entity extends ContainerMobileVehicleEntity implements Ge
     @OnlyIn(Dist.CLIENT)
     @Override
     public Vec3 getCameraPosition(float partialTicks, Player player, boolean zoom, boolean isFirstPerson) {
-        if (isFirstPerson) {
-            // В режиме от первого лица камера находится примерно на уровне глаз
+        // Проверяем: стрелок + зум + режим от первого лица
+        if (this.getSeatIndex(player) == 1 && zoom && isFirstPerson) {
+            // Получаем позицию турели
+            Matrix4f turretTransform = getTurretTransform(partialTicks);
+            
+            // Настраиваемые параметры для позиции камеры при зуме
+            float cameraOffsetX = 0.0f;      // Смещение влево/вправо
+            float cameraOffsetY = 1.8f;      // Высота камеры
+            float cameraOffsetZ = -2.0f;     // Расстояние позади турели
+            
+            Vector4f cameraWorldPos = transformPosition(turretTransform, 
+                cameraOffsetX, cameraOffsetY, cameraOffsetZ);
+            
+            return new Vec3(cameraWorldPos.x, cameraWorldPos.y, cameraWorldPos.z);
+        }
+        
+        // Для режима от первого лица без зума
+        if (isFirstPerson && !zoom) {
             return new Vec3(Mth.lerp(partialTicks, player.xo, player.getX()), 
                            Mth.lerp(partialTicks, player.yo + player.getEyeHeight(), player.getEyeY()), 
                            Mth.lerp(partialTicks, player.zo, player.getZ()));
         }
-        return super.getCameraPosition(partialTicks, player, false, false);
+        
+        // Для всех остальных случаев (включая третье лицо) используем стандартную логику
+        return super.getCameraPosition(partialTicks, player, zoom, false);
     }
+    
+
 }

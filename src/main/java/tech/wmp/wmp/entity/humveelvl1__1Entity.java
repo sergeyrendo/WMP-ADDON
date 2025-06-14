@@ -13,6 +13,9 @@ import com.atsuishio.superbwarfare.tools.CustomExplosion;
 import com.atsuishio.superbwarfare.tools.ParticleTool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -45,6 +48,7 @@ import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
+import tech.wmp.wmp.config.VehicleConfigWMP;
 import tech.wmp.wmp.init.ModSounds;
 
 // Импортируем необходимые классы для атрибутов
@@ -53,12 +57,13 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.Mob;
 
 public class humveelvl1__1Entity extends ContainerMobileVehicleEntity implements GeoEntity, LandArmorEntity, ArmedVehicleEntity {
-
+    public static final EntityDataAccessor<Integer> SMOKE_DECOY = SynchedEntityData.defineId(humveelvl1__1Entity.class, EntityDataSerializers.INT);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public humveelvl1__1Entity(EntityType<? extends humveelvl1__1Entity> type, Level world) {
         super(type, world);
         this.setMaxUpStep(1.5f);
+        this.entityData.set(SMOKE_DECOY, 0);
     }
 
     // Добавляем статический метод для создания атрибутов
@@ -111,6 +116,7 @@ public class humveelvl1__1Entity extends ContainerMobileVehicleEntity implements
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
+        this.entityData.define(SMOKE_DECOY, 2);
     }
 
     @Override
@@ -178,6 +184,8 @@ public class humveelvl1__1Entity extends ContainerMobileVehicleEntity implements
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.99, 0.95, 0.99));
         }
 
+        releaseSmokeDecoy(Vec3.ZERO);
+
         lowHealthWarning();
         this.terrainCompact(2.7f, 3.61f);
         inertiaRotate(1.25f);
@@ -220,7 +228,7 @@ public class humveelvl1__1Entity extends ContainerMobileVehicleEntity implements
         }
 
         if (this.forwardInputDown || this.backInputDown) {
-            this.consumeEnergy(VehicleConfig.LAV_150_ENERGY_COST.get());
+            this.consumeEnergy(VehicleConfigWMP.HUMVEE_ENERGY_COST.get());
         }
 
         this.entityData.set(POWER, this.entityData.get(POWER) * (upInputDown ? 0.5f : (rightInputDown || leftInputDown) ? 0.977f : 0.99f));

@@ -17,7 +17,7 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-import static tech.wmp.wmp.entity.humveelvl3Entity.YAW;
+import static com.atsuishio.superbwarfare.entity.vehicle.base.MobileVehicleEntity.YAW;
 
 public class humveelvl3Renderer extends GeoEntityRenderer<humveelvl3Entity> {
 

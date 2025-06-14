@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import tech.wmp.wmp.WMP;
+import tech.wmp.wmp.init.ModItems;
 
 @SuppressWarnings("unused")
 public class ModTabs {
@@ -18,7 +19,7 @@ public class ModTabs {
 
     // Общая вкладка со всеми предметами мода
     public static final RegistryObject<CreativeModeTab> VEHICLES = TABS.register("wmp", () -> CreativeModeTab.builder()
-            // .icon(() -> new ItemStack(ModItems.ICON_SPAWN_ITEM.get()))
+            .icon(() -> new ItemStack(ModItems.ICON_SPAWN_ITEM.get()))
             .title(Component.translatable("item_group.wmp.wmp"))
             .displayItems((parameters, output) -> {
                 output.accept(ContainerBlockItem.createInstance(ModEntities.HUMVEELVL1.get()));

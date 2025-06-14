@@ -69,6 +69,8 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import com.atsuishio.superbwarfare.entity.vehicle.base.WeaponVehicleEntity;
+
+import tech.wmp.wmp.config.VehicleConfigWMP;
 import tech.wmp.wmp.init.ModSounds;
 
 // Импортируем необходимые классы для атрибутов
@@ -177,7 +179,7 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
         this.entityData.define(CANNON_FIRE_TIME, 0);
         this.entityData.define(LOADED_MISSILE, 0);
         this.entityData.define(MISSILE_COUNT, 0);
-        this.entityData.define(SMOKE_DECOY, 0);
+        this.entityData.define(SMOKE_DECOY, 2);
         this.entityData.define(GUN_FIRE_TIME, 0);
     }
 
@@ -283,6 +285,8 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
 
         }
 
+        releaseSmokeDecoy(getTurretVector(1));
+
         lowHealthWarning();
         this.terrainCompact(2.7f, 3.61f);
         inertiaRotate(1.25f);
@@ -330,6 +334,12 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
 
         this.entityData.set(POWER, this.entityData.get(POWER) * (upInputDown ? 0.5f : (rightInputDown || leftInputDown) ? 0.977f : 0.99f));
         this.entityData.set(DELTA_ROT, this.entityData.get(DELTA_ROT) * (float) Math.max(0.76f - 0.1f * this.getDeltaMovement().horizontalDistance(), 0.3));
+
+
+        if (this.forwardInputDown || this.backInputDown) {
+            this.consumeEnergy(VehicleConfigWMP.HUMVEE_ENERGY_COST.get());
+        }
+
 
         float angle = (float) calculateAngle(this.getDeltaMovement(), this.getViewVector(1));
         double s0;
@@ -430,6 +440,15 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
         transformV.rotate(Axis.YP.rotationDegrees(Mth.lerp(ticks, turretYRotO, getTurretYRot())));
         return transformV;
     }
+
+    public Vec3 getTurretVector(float pPartialTicks) {
+        Matrix4f transform = getTurretTransform(pPartialTicks);
+        Vector4f rootPosition = transformPosition(transform, 0, 0, 0);
+        Vector4f targetPosition = transformPosition(transform, 0, 0, 1);
+        return new Vec3(rootPosition.x, rootPosition.y, rootPosition.z)
+            .vectorTo(new Vec3(targetPosition.x, targetPosition.y, targetPosition.z));
+    }
+    
 
     public Matrix4f getBarrelTransform(float ticks) {
         Matrix4f transformT = getTurretTransform(ticks);
@@ -573,7 +592,7 @@ public class humveelvl2Entity extends ContainerMobileVehicleEntity implements Ge
         if (type == 1) {
             if (this.cannotFire) return;
             Matrix4f transform = getBarrelTransform(1);
-            Vector4f worldPosition = transformPosition(transform, -0.8f, -0.20f, 0.5f);
+            Vector4f worldPosition = transformPosition(transform, -0.9f, -0.20f, 0.5f);
 
             var projectile = (ProjectileWeapon) getWeapon(1);
             var projectileEntity = projectile.create(player).setGunItemId(this.getType().getDescriptionId() + ".2");

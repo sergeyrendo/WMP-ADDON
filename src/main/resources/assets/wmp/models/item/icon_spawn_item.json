@@ -1,14 +1,14 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "vvp:item/icon_spawn_item",
-		"particle": "vvp:item/icon_spawn_item"
+		"0": "wmp:item/icon_spawn_item",
+		"particle": "wmp:item/icon_spawn_item"
 	},
 	"elements": [
 		{
-			"from": [0, 0, 7.5],
-			"to": [16, 15.75, 7.5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, 7.5]},
+			"from": [0, 0, 6.5],
+			"to": [16, 15.75, 6.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, 6.5]},
 			"faces": {
 				"north": {"uv": [0, 0, 16, 15.75], "texture": "#0"},
 				"east": {"uv": [0, 0, 1, 15.75], "texture": "#0"},
